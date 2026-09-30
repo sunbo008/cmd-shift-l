@@ -9,7 +9,9 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc -b",
-    "build": "pnpm -r run build"
+    "build": "pnpm -r run build",
+    "publish:dry-run": "pnpm build && pnpm -r publish --access public --dry-run --no-git-checks",
+    "publish:packages": "pnpm build && pnpm -r publish --access public --no-git-checks"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

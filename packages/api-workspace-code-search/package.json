@@ -53,5 +53,8 @@
     "@deepseek-ai/schemastery": "~3.18.4",
     "@dsh-plugin/workspace-code-search": "workspace:*",
     "typescript": "^5.9.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

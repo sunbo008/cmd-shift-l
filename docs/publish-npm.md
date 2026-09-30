@@ -40,7 +40,7 @@ dsh plugin --profile web add @dsh-plugin/cmd-shift-l
    - 无权限会 `403`。也可改用你有权限的 scope（同时改全部 `package.json` 的 `name` 与文档）。
 
 3. **scoped 包公开发布**  
-   每个要发的包建议有：
+   六个可发布包均已声明：
 
    ```json
    "publishConfig": {
@@ -48,7 +48,7 @@ dsh plugin --profile web add @dsh-plugin/cmd-shift-l
    }
    ```
 
-   目前仅 `@dsh-plugin/cmd-shift-l` 已写；其余包在首次发布前同样补上（或发布时统一加 `--access public`）。
+   发布命令仍建议带 `--access public`，与之一致。
 
 4. **本机已能构建**（`packages/*/lib/` 在磁盘上存在；`lib/` 被 gitignore，但 `npm pack` / publish 仍会按 `files` 打进 tarball）。
 
@@ -59,17 +59,23 @@ dsh plugin --profile web add @dsh-plugin/cmd-shift-l
 ```bash
 cd /Users/zhifengleng/workspace/github/cmd-shift-l
 
-# 1. 依赖与构建
+# 1. 依赖
 pnpm install
+
+# 2. 干跑（会先 build；不上传）
+pnpm run publish:dry-run
+
+# 3. 正式发布（需已 npm login，且对 @dsh-plugin 有权限）
+pnpm run publish:packages
+```
+
+脚本定义在根 `package.json`：`publish:dry-run` / `publish:packages`（均含 `build` 与 `--no-git-checks`）。
+
+等价手工命令：
+
+```bash
 pnpm build
-
-# 2. 可选：跑测试
-pnpm test
-
-# 3. 干跑（不上传，检查 tarball 与依赖改写）
-pnpm -r publish --access public --dry-run
-
-# 4. 正式发布（按依赖顺序发完 6 个包；跳过「工作区未提交」检查时加 --no-git-checks）
+pnpm -r publish --access public --dry-run --no-git-checks
 pnpm -r publish --access public --no-git-checks
 ```
 
@@ -77,7 +83,6 @@ pnpm -r publish --access public --no-git-checks
 
 - `-r`：递归发布所有非 private 工作区包。  
 - `--access public`：scoped 包对匿名用户可见。  
-- 若工作区有未提交改动且不想先 commit：用 `--no-git-checks`（更稳妥是先 commit/push 再发）。  
 - **同版本不可覆盖**：已发布过的 `0.1.0` 再发会失败，需先改各包 `version`（保持一致）再发。
 
 ### 只检查某个包的 tarball 内容

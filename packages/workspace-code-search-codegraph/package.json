@@ -30,5 +30,8 @@
     "@deepseek-ai/cordis": "~4.0.4",
     "@dsh-plugin/workspace-code-search": "workspace:*",
     "typescript": "^5.9.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
