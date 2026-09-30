@@ -4,26 +4,11 @@
  * workspace-files' `workspaceFileScope` lookup (wire = SessionId).
  */
 import {
-  contentLegResultSchema,
-  fileLegResultSchema,
-  legRequestSchema,
   scopeLookup,
   searchRequestSchema,
   searchResultSchema,
   statusResultSchema,
-  symbolLegResultSchema,
 } from './schemas.ts'
-
-const legRequestParam = {
-  name: 'request',
-  wire: 'request',
-  source: 'json' as const,
-  codec: {
-    mode: 'strict' as const,
-    typeSymbol: '@dsh-plugin/cmd-shift-l#RemoteLegRequest',
-    create: legRequestSchema,
-  },
-}
 
 /** Host face registered by typert-loader when this package is an active Cordis entry. */
 export const TYPERT = {
@@ -70,48 +55,6 @@ export const TYPERT = {
         create: searchResultSchema,
       },
     },
-    {
-      id: '@dsh-plugin/cmd-shift-l#workspaceCodeSearch/searchFiles',
-      service: 'workspaceCodeSearchController',
-      namespace: 'workspaceCodeSearch',
-      method: 'searchFiles',
-      invocation: { kind: 'direct' as const },
-      parameters: [scopeLookup, legRequestParam],
-      cancellation: { parameter: 'signal' as const },
-      result: {
-        mode: 'strict' as const,
-        typeSymbol: '@dsh-plugin/cmd-shift-l#FileLegResult',
-        create: fileLegResultSchema,
-      },
-    },
-    {
-      id: '@dsh-plugin/cmd-shift-l#workspaceCodeSearch/searchSymbols',
-      service: 'workspaceCodeSearchController',
-      namespace: 'workspaceCodeSearch',
-      method: 'searchSymbols',
-      invocation: { kind: 'direct' as const },
-      parameters: [scopeLookup, legRequestParam],
-      cancellation: { parameter: 'signal' as const },
-      result: {
-        mode: 'strict' as const,
-        typeSymbol: '@dsh-plugin/cmd-shift-l#SymbolLegResult',
-        create: symbolLegResultSchema,
-      },
-    },
-    {
-      id: '@dsh-plugin/cmd-shift-l#workspaceCodeSearch/searchContent',
-      service: 'workspaceCodeSearchController',
-      namespace: 'workspaceCodeSearch',
-      method: 'searchContent',
-      invocation: { kind: 'direct' as const },
-      parameters: [scopeLookup, legRequestParam],
-      cancellation: { parameter: 'signal' as const },
-      result: {
-        mode: 'strict' as const,
-        typeSymbol: '@dsh-plugin/cmd-shift-l#ContentLegResult',
-        create: contentLegResultSchema,
-      },
-    },
   ],
   model: {
     services: [
@@ -129,21 +72,6 @@ export const TYPERT = {
             kind: 'method',
             name: 'search',
             signature: '@Remote search(workspaceFileScope, request, signal): SearchResult',
-          },
-          {
-            kind: 'method',
-            name: 'searchFiles',
-            signature: '@Remote searchFiles(workspaceFileScope, request, signal): FileLegResult',
-          },
-          {
-            kind: 'method',
-            name: 'searchSymbols',
-            signature: '@Remote searchSymbols(workspaceFileScope, request, signal): SymbolLegResult',
-          },
-          {
-            kind: 'method',
-            name: 'searchContent',
-            signature: '@Remote searchContent(workspaceFileScope, request, signal): ContentLegResult',
           },
         ],
         types: [],
