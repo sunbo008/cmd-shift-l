@@ -1,6 +1,6 @@
 packages/*/tests/fixtures/
 node_modules/
-lib/
+# lib/ 提交进仓库：github 安装无需 prepare/allowBuilds（pnpm 11 会拦 git 包构建脚本）
 *.tsbuildinfo
 .DS_Store
 .codegraph/

@@ -58,7 +58,6 @@
     "build": "pnpm run clean && tsc -p tsconfig.build.json && node ./scripts/build-client.mjs",
     "clean": "node -e \"require('node:fs').rmSync('lib',{recursive:true,force:true})\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "prepare": "pnpm run build",
     "test": "vitest run",
     "prepublishOnly": "pnpm build"
   },
