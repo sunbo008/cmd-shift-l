@@ -2,7 +2,7 @@
 
 外部可安装的 DeepSeek Harness（dsh）工作区代码搜索 Bundle。
 
-布局对齐 [DSH-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar)：**仓库根目录单包**，`dsh.bundle` + Host/Client 同包，依赖只走 npm registry。仓库已提交预构建 `lib/`，git 安装不跑构建脚本，**无需** `allowBuilds`。
+根目录单包：`dsh.bundle` + Host/Client 同包，依赖只走 npm registry。仓库已提交预构建 `lib/`，git 安装不跑构建脚本，无需 `allowBuilds`。
 
 ## 安装
 

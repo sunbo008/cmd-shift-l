@@ -1,5 +1,5 @@
 /**
- * Host entry for @dsh-plugin/cmd-shift-l — single package (better-sidebar layout).
+ * Host entry for @dsh-plugin/cmd-shift-l.
  * Registers search service, providers, and Typert Remote in one Cordis plugin.
  */
 import type { Context } from '@deepseek-ai/cordis'

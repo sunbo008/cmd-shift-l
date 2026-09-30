@@ -1,6 +1,6 @@
 # 发布到 npm
 
-单包发布（与 [DSH-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar) 相同）：根目录即 `@dsh-plugin/cmd-shift-l`。
+单包发布：根目录即 `@dsh-plugin/cmd-shift-l`。
 
 ```bash
 pnpm install
