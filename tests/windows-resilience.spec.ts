@@ -9,7 +9,6 @@ import { searchFilesInWorker, searchSymbolsInWorker } from '../src/codegraph/wor
 import { isUnderRoot } from '../src/content/path-util.ts'
 import { SearchRequestController } from '../src/client/search-controller.ts'
 import type { WorkspaceCodeSearchRemote } from '../src/api/client.ts'
-import type { SearchResult } from '../src/service/types.ts'
 
 const testsDir = resolve(fileURLToPath(new URL('.', import.meta.url)))
 const fixtures = resolve(testsDir, 'fixtures')
@@ -54,15 +53,22 @@ describe('isUnderRoot', () => {
 describe('SearchRequestController client timeout', () => {
   it('clears searching when Remote never settles', async () => {
     vi.useFakeTimers()
-    const search = vi.fn(() => new Promise<SearchResult>(() => { /* hang */ }))
-    const remote = { search, status: vi.fn() } as unknown as WorkspaceCodeSearchRemote
+    const remote = {
+      status: vi.fn(),
+      search: vi.fn(),
+      searchFiles: vi.fn().mockResolvedValue({ hits: [], truncated: false }),
+      searchSymbols: vi.fn().mockResolvedValue({ hits: [], truncated: false }),
+      searchContent: vi.fn(async function* () {
+        await new Promise(() => { /* hang */ })
+      }),
+    } as unknown as WorkspaceCodeSearchRemote
     const states: boolean[] = []
     const errors: Array<string | undefined> = []
     const controller = new SearchRequestController(
       remote,
       { sessionId: 's1', workspaceRoot: '/ws' },
       { debounceMs: 0, clientTimeoutMs: 100 },
-      (_result, searching) => { states.push(searching) },
+      (state) => { states.push(state.searching) },
       (message) => { errors.push(message) },
     )
     controller.schedule('needle', ['content'])

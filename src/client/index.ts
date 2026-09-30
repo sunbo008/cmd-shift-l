@@ -7,8 +7,14 @@
 import type { Context } from '@deepseek-ai/cordis'
 import workspaceCodeSearchRemote from '../api/remote.ts'
 import type { WorkspaceCodeSearchRemote } from '../api/client.ts'
-import type { CodegraphStatus, SearchResult } from '../service/types.ts'
-import type { RemoteSearchRequest, WorkspaceSearchScope } from '../api/client.ts'
+import type {
+  CodegraphStatus,
+  ContentSearchFrame,
+  FileLegResult,
+  SearchResult,
+  SymbolLegResult,
+} from '../service/types.ts'
+import type { RemoteLegRequest, RemoteSearchRequest, WorkspaceSearchScope } from '../api/client.ts'
 import { SearchModalHost } from './SearchModalHost.tsx'
 import { resolveDebounceMs, type ClientConfig } from './client-config.ts'
 import { en, zh } from './locales.ts'
@@ -143,6 +149,11 @@ function registerUi(face: ClientFace, debounceMs: number): void {
         kindSymbol: t('kindSymbol'),
         kindContent: t('kindContent'),
         searching: t('searching'),
+        searchingLegs: t('searchingLegs'),
+        legRunning: t('legRunning'),
+        legDone: t('legDone'),
+        matchedCount: t('matchedCount'),
+        aboutEta: t('aboutEta'),
         noResults: t('noResults'),
         truncated: t('truncated'),
         codegraphMissing: t('codegraphMissing'),
@@ -206,6 +217,33 @@ function adaptRemote(ns: WireWorkspaceCodeSearch): WorkspaceCodeSearchRemote {
       if (!result.ok) throw result.error
       return result.value
     },
+    async searchFiles(
+      scope: WorkspaceSearchScope,
+      request: RemoteLegRequest,
+      signal: AbortSignal,
+    ): Promise<FileLegResult> {
+      const result = await ns.searchFiles(scope.sessionId, request, signal)
+      if (!result.ok) throw result.error
+      return result.value
+    },
+    async searchSymbols(
+      scope: WorkspaceSearchScope,
+      request: RemoteLegRequest,
+      signal: AbortSignal,
+    ): Promise<SymbolLegResult> {
+      const result = await ns.searchSymbols(scope.sessionId, request, signal)
+      if (!result.ok) throw result.error
+      return result.value
+    },
+    searchContent(
+      scope: WorkspaceSearchScope,
+      request: RemoteLegRequest,
+      signal: AbortSignal,
+    ): AsyncIterable<ContentSearchFrame> {
+      const handle = ns.searchContent(scope.sessionId, request, signal)
+      signal.addEventListener('abort', () => { handle.dispose() }, { once: true })
+      return handle
+    },
   }
 }
 
@@ -217,6 +255,26 @@ interface WireWorkspaceCodeSearch {
     request: RemoteSearchRequest,
     signal: AbortSignal,
   ): Promise<RemoteOk<SearchResult>>
+  searchFiles(
+    sessionId: string,
+    request: RemoteLegRequest,
+    signal: AbortSignal,
+  ): Promise<RemoteOk<FileLegResult>>
+  searchSymbols(
+    sessionId: string,
+    request: RemoteLegRequest,
+    signal: AbortSignal,
+  ): Promise<RemoteOk<SymbolLegResult>>
+  searchContent(
+    sessionId: string,
+    request: RemoteLegRequest,
+    signal: AbortSignal,
+  ): RemoteStreamHandle<ContentSearchFrame>
+}
+
+/** Minimal stream handle shape from Typert Client mount. */
+interface RemoteStreamHandle<T> extends AsyncIterable<T> {
+  dispose(): void
 }
 
 type RemoteOk<T> =
