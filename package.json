@@ -1,6 +1,6 @@
 {
   "name": "@dsh-plugin/cmd-shift-l",
-  "version": "0.1.0",
+  "version": "0.1.1-inert",
   "description": "External dsh bundle: workspace code search (Cmd/Ctrl+Shift+L / Shift+F)",
   "icon": "./icon.svg",
   "type": "module",
@@ -17,9 +17,6 @@
     ".": {
       "types": "./lib/types/index.d.ts",
       "default": "./lib/index.js"
-    },
-    "./client": {
-      "default": "./lib/client.js"
     },
     "./cordis.patch.yml": "./cordis.patch.yml",
     "./locale/*.json": "./locale/*.json",
@@ -45,7 +42,7 @@
     "manifestVersion": 1
   },
   "scripts": {
-    "build": "pnpm run clean && tsc -p tsconfig.build.json && node ./scripts/build-client.mjs",
+    "build": "pnpm run clean && tsc -p tsconfig.build.json",
     "clean": "node -e \"require('node:fs').rmSync('lib',{recursive:true,force:true})\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",

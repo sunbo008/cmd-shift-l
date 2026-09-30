@@ -27,16 +27,23 @@ dsh plugin --profile web add "github:sunbo008/cmd-shift-l#<commit-sha>"
 
 装完后**完全退出再开** `dsh web`（仅刷新浏览器不够）。若报 `EADDRINUSE:3080`，先结束占用该端口的旧进程，或 `dsh web --port 3081`。
 
-> **临时隔离：** 当前包 **不加载 Client、也不插入 Host 行**（空 `cordis.patch.yml` + 空 `apply`）。装上后应与卸插件时一样能正常用会话/Files；搜索功能暂不可用。用来确认「装上就卡」是否已消失；若仍卡，请把 `%USERPROFILE%\.dsh\profiles\web\pnpm-lock.yaml` 里 `cmd-shift-l` 的 tar.gz commit 发出来。
+> **临时隔离（`0.1.1-inert`）：** 无 Client 导出、空 `cordis.patch.yml`、空 Host `apply`。装上后 Files 不应再停在「正在读取…」。若仍停住，lock 里版本应显示 `0.1.1-inert`；否则是旧包。
 
 本机调试：`pnpm install && pnpm build` →  
 `dsh plugin --profile web add /绝对路径/cmd-shift-l`。
 
 ### Windows 界面卡住 / 白屏
 
-1. 确认 lock 已到最新：在 `%USERPROFILE%\.dsh\profiles\web\pnpm-lock.yaml` 搜 `cmd-shift-l`，应含本机刚 `add "#main"` 时拉到的 commit（勿停在 `71f84a0` / `bc1e978` 及更早）。
-2. 看启动日志：`%USERPROFILE%\.dsh\logs\startup-*.log`（若只有 `EADDRINUSE` 是端口问题，不是本插件）。
-3. 卸掉本插件后若界面恢复 → 再按上面「先卸再装 `#main`」强制升级。
+当前常见两种表现：
+
+| 现象 | 含义 |
+|------|------|
+| 会话空白 / 输入框仍写「选择一个工作区开始」 | Client boot 被堵（旧版 `$mount`） |
+| 会话能开，但右侧「文件」一直「正在读取…」、底部「正在加载模型…」 | Host `workspaceFiles.list` 等 Remote 不返回（旧版 Host 仍在加载） |
+
+1. 确认 lock：`%USERPROFILE%\.dsh\profiles\web\pnpm-lock.yaml` 搜 `cmd-shift-l`，应含 `0.1.1-inert` 或最新 `#main` commit。
+2. 看启动日志：`%USERPROFILE%\.dsh\logs\startup-*.log`。
+3. 仍异常：先 `remove` 再 `add "#main"`，完全退出后重开 `dsh web`。
 
 ## UI 入口
 
