@@ -20,15 +20,16 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepare": "pnpm run build"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",
-    "@dsh-plugin/workspace-code-search": "workspace:*"
+    "@dsh-plugin/workspace-code-search": "0.1.0"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",
-    "@dsh-plugin/workspace-code-search": "workspace:*",
+    "@dsh-plugin/workspace-code-search": "file:../workspace-code-search",
     "typescript": "^5.9.0"
   },
   "publishConfig": {
