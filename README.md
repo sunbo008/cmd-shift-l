@@ -27,22 +27,25 @@ dsh plugin --profile web add "github:sunbo008/cmd-shift-l#<commit-sha>"
 
 装完后**完全退出再开** `dsh web`（仅刷新浏览器不够）。若报 `EADDRINUSE:3080`，先结束占用该端口的旧进程，或 `dsh web --port 3081`。
 
-> **临时（`0.1.2-host-lazy`）：** Host 延迟 3s 再动态加载搜索逻辑，避免堵死 Files；**Client / 放大镜仍关闭**。先确认右侧「文件」能列出；放大镜下一版再加回。
+> **临时（`0.1.3-noop`）：** 空 patch + 空 apply，**不加载任何 Host/Client 代码**。用于恢复 Windows 启动与 Files。查找放大镜暂无。
 
 本机调试：`pnpm install && pnpm build` →  
 `dsh plugin --profile web add /绝对路径/cmd-shift-l`。
 
-### Windows 界面卡住 / 白屏
+### Windows 界面卡住
 
-| 现象 | 含义 |
+| 现象 | 处理 |
 |------|------|
-| 会话空白 / 「选择一个工作区开始」 | Client `$mount` 堵 boot（旧版） |
-| 会话正常，Files「正在读取…」，无查找放大镜 | Host 在启动时同步加载 `node:sqlite`/Remote，堵了 `workspaceFiles.list`；或仍是空包未装到 lazy Host |
-| 无放大镜 | 当前发布刻意未开 Client |
+| 卡启动 / 会话空白 | 装 `0.1.3-noop`（本版）；lock 须含该版本 |
+| Files「正在读取…」且无放大镜 | 先确认已是 `0.1.3-noop`；若仍如此，卸掉本插件对比 |
+| 无放大镜 | 预期：Client 未启用 |
 
-1. lock 搜 `cmd-shift-l`，版本应为 **`0.1.2-host-lazy`**。
-2. 启动日志：`%USERPROFILE%\.dsh\logs\startup-*.log`。
-3. 先卸再装 `#main`，完全退出后重开。
+```bat
+dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
+dsh plugin --profile web add "github:sunbo008/cmd-shift-l#main"
+```
+
+完全退出再开 `dsh web`。lock 版本必须是 **`0.1.3-noop`**。
 
 ## UI 入口
 

@@ -1,9 +1,8 @@
 /**
  * Host entry for @dsh-plugin/cmd-shift-l.
  *
- * Top-level imports stay light: never pull `node:sqlite`, Typert Remotes, or
- * providers during module evaluation. Windows Host previously stalled
- * `workspaceFiles.list` (Files「正在读取…」) when those loaded at plug-in boot.
+ * TEMPORARY: apply is a no-op. Loading Host search (even deferred) hangs Windows
+ * web startup again; keep the package installable without running any Host code.
  */
 import type { Context } from '@deepseek-ai/cordis'
 import { Config } from './config.ts'
@@ -26,26 +25,8 @@ export type {
 } from './service/types.ts'
 export { asAbsolutePath } from './service/types.ts'
 
-/** Delay Host search wiring so Files / model RPC can finish first on Windows. */
-const HOST_BOOT_DELAY_MS = 3_000
-
 /**
- * @param ctx - Cordis host context
- * @param config - validated bundle config
+ * @param _ctx - unused while inert
+ * @param _config - unused while inert
  */
-export function apply(ctx: Context, config: Config): void {
-  ctx.effect(() => {
-    const timer = setTimeout(() => {
-      void import('./boot-host.ts')
-        .then((mod) => {
-          mod.bootHost(ctx, config)
-        })
-        .catch((error: unknown) => {
-          console.error('[cmd-shift-l] deferred Host boot failed', error)
-        })
-    }, HOST_BOOT_DELAY_MS)
-    return () => {
-      clearTimeout(timer)
-    }
-  }, 'cmd-shift-l: deferred host boot')
-}
+export function apply(_ctx: Context, _config: Config): void {}
