@@ -22,8 +22,34 @@ export const inject = ['locale', 'shortcuts', 'slots', 'sidebarRight', 'remote',
 
 export type { ClientConfig }
 
+const MOUNT_TIMEOUT_MS = 8_000
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
+/**
+ * Reject if `promise` does not settle within `ms`.
+ * @param promise - work to bound
+ * @param ms - timeout
+ * @param label - error label
+ */
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return await Promise.race([
+    promise,
+    delay(ms).then(() => {
+      throw new Error(`${label} timed out after ${String(ms)}ms`)
+    }),
+  ])
+}
+
 /**
  * Mount workspace code search UI and Client Remote contribution.
+ *
+ * Never block Client boot on Windows: `$mount` / inject failures degrade to
+ * "search unavailable" instead of freezing Sessions / Files.
  * @param ctx - Client root context
  * @param config - optional Client debounce (Host owns search Config)
  * @returns disposer that withdraws Remote + UI effects
@@ -35,18 +61,37 @@ export async function apply(
   const debounceMs = resolveDebounceMs(config)
   const face = ctx as unknown as ClientFace
 
-  const disposeRemote = await face.remote.$mount(workspaceCodeSearchRemote)
-  // Wait for the mounted namespace (same pattern as experimental voice-input).
+  let disposeRemote: (() => Promise<void>) | undefined
+  try {
+    disposeRemote = await withTimeout(
+      face.remote.$mount(workspaceCodeSearchRemote),
+      MOUNT_TIMEOUT_MS,
+      'workspace-code-search $mount',
+    )
+  } catch (error) {
+    console.error('[workspace-code-search] Client Remote $mount failed; UI continues without search', error)
+    return async () => {}
+  }
+
+  // Do not inject `remote.workspaceCodeSearch` — waiting on that namespace has
+  // hung Windows Desktop/Client boot (Sessions blank, Files stuck on 正在读取).
   const ui = ctx.inject(
-    ['locale', 'shortcuts', 'slots', 'sidebarRight', 'remote.workspaceCodeSearch', 'sessions'],
-    (scoped) => { registerUi(scoped as unknown as ClientFace, debounceMs) },
+    ['locale', 'shortcuts', 'slots', 'sidebarRight', 'remote', 'sessions'],
+    (scoped) => {
+      try {
+        registerUi(scoped as unknown as ClientFace, debounceMs)
+      } catch (error) {
+        console.error('[workspace-code-search] registerUi failed', error)
+      }
+    },
   )
   try {
-    await ui
+    await withTimeout(Promise.resolve(ui as PromiseLike<unknown>), MOUNT_TIMEOUT_MS, 'workspace-code-search inject')
   } catch (error) {
     await ui.dispose()
     await disposeRemote()
-    throw error
+    console.error('[workspace-code-search] UI inject failed; UI continues without search', error)
+    return async () => {}
   }
   return async () => {
     await ui.dispose()
@@ -61,6 +106,9 @@ export async function apply(
  */
 function registerUi(face: ClientFace, debounceMs: number): void {
   const { locale, shortcuts, slots, sidebarRight, sessions, remote } = face
+  if (remote.workspaceCodeSearch === undefined) {
+    throw new Error('workspace-code-search: remote.workspaceCodeSearch missing after $mount')
+  }
   const searchRemote = adaptRemote(remote.workspaceCodeSearch)
 
   face.effect(() => locale.register(NS, { zh, en }), 'workspace-code-search: dictionaries')
@@ -264,6 +312,6 @@ interface ClientFace {
   }
   remote: {
     $mount(contribution: unknown): Promise<() => Promise<void>>
-    workspaceCodeSearch: WireWorkspaceCodeSearch
+    workspaceCodeSearch?: WireWorkspaceCodeSearch
   }
 }
