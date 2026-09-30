@@ -1,6 +1,6 @@
 {
   "name": "@dsh-plugin/cmd-shift-l",
-  "version": "0.1.11-e3e6a8f",
+  "version": "0.1.12-971172e",
   "description": "External dsh bundle: workspace code search (Cmd/Ctrl+Shift+L / Shift+F)",
   "icon": "./icon.svg",
   "type": "module",
