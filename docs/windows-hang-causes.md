@@ -2,7 +2,7 @@
 
 日期：2026-09-30  
 范围：`@dsh-plugin/cmd-shift-l` 在 Windows + `dsh web`（Chrome）上的表现。  
-**已知可用钉扎提交：`d660b5c`（版本 `0.1.16-pin-e3e6a8f`，源码行为 = `e3e6a8f`）。** 此后改动须单变量叠加并在 Windows 实机确认。
+**已知可用钉扎：`0.2.0`（Windows 实机确认；行为 = `d660b5c` + 分腿 unary 进度）。** 此后改动须单变量叠加并在 Windows 实机确认。
 
 ## 结论摘要
 
@@ -16,19 +16,20 @@
 
 ## 逐步验证时间线（Windows）
 
-| 版本 | 对应提交 | 结果 |
-|------|----------|------|
-| `0.1.7-a3f766b` | `a3f766b` | 可用（better-sidebar 单包对齐会话时点） |
-| `0.1.8-4be9cb8` | `4be9cb8` | 可用（Client zod/v4/mini） |
-| `0.1.9-9f5674a` | `9f5674a` | 可用（Dock 曾减弱 MutationObserver） |
-| `0.1.10-f11dde2` | `f11dde2` | 可用（SQLite → worker） |
-| `0.1.11-e3e6a8f` | `e3e6a8f` | 可用；启动略卡 |
-| `0.1.12-971172e` | `971172e` | **整页卡**（Dock pump + status probe） |
-| `0.1.13-pin-e3e6a8f` | 钉回 `e3e6a8f` | 可用 |
-| `0.1.14-lazy-sqlite` | probe + 去掉 Host 静态 sqlite | 启动不慢；**Files「正在读取…」** |
-| `0.1.15-no-mutobs` | 去掉 MutationObserver，改 setTimeout 轮询 | **整页卡**（同 `971172e` Dock 方向） |
-| `0.1.16-pin-e3e6a8f` | 提交 `d660b5c`，钉回 `e3e6a8f` | **确认可用（当前安全基线）** |
-| `0.1.17-progress-safe` | 在 `d660b5c` 上只加分腿进度 UI | 三次 `search({ kinds: [one] })`；**不**增 Client/Host Remote；**不**改 Dock |
+| 版本　　　　　　　　　 | 对应提交　　　　　　　　　　　　　　　　　　　　　　| 结果　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　|
+| ------------------------| -----------------------------------------------------| -----------------------------------------------------------------------------|
+| `0.1.7-a3f766b`　　　　| `a3f766b`　　　　　　　　　　　　　　　　　　　　　 | 可用（better-sidebar 单包对齐会话时点）　　　　　　　　　　　　　　　　　　 |
+| `0.1.8-4be9cb8`　　　　| `4be9cb8`　　　　　　　　　　　　　　　　　　　　　 | 可用（Client zod/v4/mini）　　　　　　　　　　　　　　　　　　　　　　　　　|
+| `0.1.9-9f5674a`　　　　| `9f5674a`　　　　　　　　　　　　　　　　　　　　　 | 可用（Dock 曾减弱 MutationObserver）　　　　　　　　　　　　　　　　　　　　|
+| `0.1.10-f11dde2`　　　 | `f11dde2`　　　　　　　　　　　　　　　　　　　　　 | 可用（SQLite → worker）　　　　　　　　　　　　　　　　　　　　　　　　　　 |
+| `0.1.11-e3e6a8f`　　　 | `e3e6a8f`　　　　　　　　　　　　　　　　　　　　　 | 可用；启动略卡　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　|
+| `0.1.12-971172e`　　　 | `971172e`　　　　　　　　　　　　　　　　　　　　　 | **整页卡**（Dock pump + status probe）　　　　　　　　　　　　　　　　　　　|
+| `0.1.13-pin-e3e6a8f`　 | 钉回 `e3e6a8f`　　　　　　　　　　　　　　　　　　　| 可用　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　|
+| `0.1.14-lazy-sqlite`　 | probe + 去掉 Host 静态 sqlite　　　　　　　　　　　 | 启动不慢；**Files「正在读取…」**　　　　　　　　　　　　　　　　　　　　　　|
+| `0.1.15-no-mutobs`　　 | 去掉 MutationObserver，改 setTimeout 轮询　　　　　 | **整页卡**（同 `971172e` Dock 方向）　　　　　　　　　　　　　　　　　　　　|
+| `0.1.16-pin-e3e6a8f`　 | 提交 `d660b5c`，钉回 `e3e6a8f`　　　　　　　　　　　| **确认可用（安全基线）**　　　　　　　　　　　　　　　　　　　　　　　　　　|
+| `0.1.17-progress-safe` | 在 `d660b5c` 上只加分腿进度 UI　　　　　　　　　　　| 三次 `search({ kinds: [one] })`；**不**增 Client/Host Remote；**不**改 Dock |
+| `0.2.0`　　　　　　　　| tag = `0.1.17-progress-safe` 行为；Windows 实机可用 | **当前发布**　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　|
 
 ## 分项说明
 
@@ -74,7 +75,7 @@ Windows 上表现为启动「顿一下」。
 ## 当前策略
 
 1. **安全基线提交：`d660b5c`**（`0.1.16-pin-e3e6a8f` = `e3e6a8f` 行为）。  
-2. **`0.1.17-progress-safe`：** 仅叠加分腿进度（三次 unary `search`）；Dock / Remote 面与 `d660b5c` 一致。Windows 实机确认前勿再叠 lazy-sqlite 或 Dock 改动。  
+2. **`0.2.0`（Windows 已确认）：** 分腿进度（三次 unary `search`）；Dock / Remote 面与 `d660b5c` 一致。  
 3. 后续改动必须 **单变量** 发布，每档 Windows 实机确认。  
 4. **禁止**在未验证前合并：`971172e` 式 Dock pump、多 Remote / stream Client `$mount`。  
 5. Files「正在读取…」与整页卡的 Dock 两难写入上表，待有官方 strip slot 或更稳挂载后再解。
@@ -86,4 +87,4 @@ dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
 dsh plugin --profile web add "github:sunbo008/cmd-shift-l#main"
 ```
 
-确认 `%USERPROFILE%\.dsh\profiles\web\pnpm-lock.yaml` 中版本为当前 README 所写钉扎版本（应为 `0.1.17-progress-safe`）。
+确认 `%USERPROFILE%\.dsh\profiles\web\pnpm-lock.yaml` 中版本为当前 README 所写钉扎版本（应为 `0.2.0`）。
