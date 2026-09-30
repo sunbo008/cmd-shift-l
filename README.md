@@ -12,7 +12,6 @@
 
 - [工作区代码搜索设计](docs/specs/2026-09-29-workspace-code-search-design.md)
 - [工作区代码搜索实现计划](docs/plans/2026-09-30-workspace-code-search.md)
-- [发布到 npm](docs/publish-npm.md)
 
 ## Bundle
 
@@ -38,7 +37,7 @@ dsh --profile web desktop
 dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
 ```
 
-> 包需已发布到 npm；发布步骤见 [docs/publish-npm.md](docs/publish-npm.md)。未发布时 `add` 会 404。
+> 包需已发布到 npm；未发布时 `add` 会 404。
 
 ### UI 入口（仅此两处）
 

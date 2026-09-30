@@ -30,7 +30,7 @@ dsh --profile <name> web
 dsh --profile <name> desktop
 ```
 
-包需已发布到 npm；未发布时 `add` 会找不到包。维护者发布步骤见仓库 [docs/publish-npm.md](../../docs/publish-npm.md)。
+包需已发布到 npm；未发布时 `add` 会找不到包。
 
 ## 恢复 / 卸载
 
