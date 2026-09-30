@@ -4,7 +4,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '../service/index.ts'
 import { openCodegraph } from './db.ts'
-import { searchFiles, searchSymbols } from './search.ts'
+import { searchFilesInWorker, searchSymbolsInWorker } from './worker-search.ts'
 
 /**
  * @param ctx - Cordis context with workspaceCodeSearch
@@ -19,25 +19,19 @@ export function registerCodegraphProvider(ctx: Context): void {
     },
     async searchFiles(request) {
       const opened = openCodegraph(request.root)
-      if (opened.db === undefined) {
+      opened.db?.close()
+      if (opened.dbPath === undefined || opened.status.codegraph !== 'ready') {
         return { hits: [], truncated: false }
       }
-      try {
-        return await searchFiles(opened.db, request)
-      } finally {
-        opened.db.close()
-      }
+      return await searchFilesInWorker(opened.dbPath, request)
     },
     async searchSymbols(request) {
       const opened = openCodegraph(request.root)
-      if (opened.db === undefined) {
+      opened.db?.close()
+      if (opened.dbPath === undefined || opened.status.codegraph !== 'ready') {
         return { hits: [], truncated: false }
       }
-      try {
-        return await searchSymbols(opened.db, request)
-      } finally {
-        opened.db.close()
-      }
+      return await searchSymbolsInWorker(opened.dbPath, request)
     },
   }), 'workspace-code-search-codegraph: register')
 }

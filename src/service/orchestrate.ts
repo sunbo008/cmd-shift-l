@@ -42,41 +42,38 @@ function emptyResult(): SearchResult {
 }
 
 async function withTimeout<T>(
-  promise: Promise<T>,
+  run: (signal: AbortSignal) => Promise<T>,
   ms: number,
   signal: AbortSignal,
 ): Promise<T> {
-  const timeout = AbortSignal.timeout(ms)
-  const combined = AbortSignal.any([signal, timeout])
-  combined.throwIfAborted()
-  return await new Promise<T>((resolve, reject) => {
-    const onAbort = (): void => {
-      reject(combined.reason ?? new Error('aborted'))
-    }
-    if (combined.aborted) {
-      onAbort()
-      return
-    }
-    combined.addEventListener('abort', onAbort, { once: true })
-    promise.then(
-      (value) => {
-        combined.removeEventListener('abort', onAbort)
-        resolve(value)
-      },
-      (error: unknown) => {
-        combined.removeEventListener('abort', onAbort)
-        reject(error)
-      },
-    )
-  })
-}
-
-function isAbortError(error: unknown): boolean {
-  if (error instanceof Error && error.name === 'AbortError') return true
-  if (typeof error === 'object' && error !== null && 'name' in error) {
-    return (error as { name: string }).name === 'AbortError'
+  const local = new AbortController()
+  const timer = setTimeout(() => {
+    local.abort(new DOMException(`workspaceCodeSearch timed out after ${String(ms)}ms`, 'TimeoutError'))
+  }, ms)
+  const onParentAbort = (): void => {
+    local.abort(signal.reason)
   }
-  return false
+  if (signal.aborted) {
+    clearTimeout(timer)
+    throw signal.reason instanceof Error ? signal.reason : new Error('aborted')
+  }
+  signal.addEventListener('abort', onParentAbort, { once: true })
+  try {
+    return await run(local.signal)
+  } catch (error) {
+    // Prefer the timeout reason when our timer fired (providers often wrap as AbortError).
+    if (local.signal.aborted && !signal.aborted) {
+      const reason = local.signal.reason
+      throw reason instanceof Error ? reason : new DOMException(
+        `workspaceCodeSearch timed out after ${String(ms)}ms`,
+        'TimeoutError',
+      )
+    }
+    throw error
+  } finally {
+    clearTimeout(timer)
+    signal.removeEventListener('abort', onParentAbort)
+  }
 }
 
 /**
@@ -134,12 +131,13 @@ export async function orchestrateSearch(
 
   const leg = async (
     label: 'file' | 'symbol' | 'content' | 'codegraph',
-    run: () => Promise<void>,
+    run: (signal: AbortSignal) => Promise<void>,
   ): Promise<void> => {
     try {
-      await withTimeout(run(), config.searchTimeoutMs, request.signal)
+      await withTimeout(run, config.searchTimeoutMs, request.signal)
     } catch (error) {
-      if (request.signal.aborted || isAbortError(error)) throw error
+      // Parent cancellation aborts the whole search; per-leg timeout stays isolated.
+      if (request.signal.aborted) throw error
       if (label === 'codegraph') {
         errors.codegraph = error instanceof Error ? error.message : String(error)
       } else if (label === 'content') {
@@ -154,12 +152,29 @@ export async function orchestrateSearch(
 
   if (kinds.has('file') || kinds.has('symbol')) {
     if (!codegraphReady) {
-      // leave files/symbols empty; caller UI shows status banner
+      // Index missing: still offer filesystem path search via the content provider.
+      if (kinds.has('file')) {
+        const fsProvider = list.find(p => p.id === 'content' && p.searchFiles !== undefined)
+        if (fsProvider?.searchFiles !== undefined) {
+          const searchFiles = fsProvider.searchFiles.bind(fsProvider)
+          tasks.push(leg('file', async (signal) => {
+            const result = await searchFiles({
+              root: request.root,
+              query,
+              limit,
+              signal,
+            })
+            files = result.hits
+            if (result.truncated) truncated = true
+            if (result.error !== undefined) errors.file = result.error
+          }))
+        }
+      }
     } else {
       // Merge every searchFiles provider (codegraph first, then rg --files fill-in
       // for paths the index omits such as Markdown).
       if (kinds.has('file') && fileProviders.length > 0) {
-        tasks.push(leg('file', async () => {
+        tasks.push(leg('file', async (signal) => {
           const seen = new Set<string>()
           const merged: FileHit[] = []
           let anyTruncated = false
@@ -169,7 +184,7 @@ export async function orchestrateSearch(
               root: request.root,
               query,
               limit,
-              signal: request.signal,
+              signal,
             })
             if (result.truncated) anyTruncated = true
             for (const hit of result.hits) {
@@ -185,12 +200,12 @@ export async function orchestrateSearch(
       }
       if (kinds.has('symbol') && symbolsProvider?.searchSymbols) {
         const searchSymbols = symbolsProvider.searchSymbols.bind(symbolsProvider)
-        tasks.push(leg('symbol', async () => {
+        tasks.push(leg('symbol', async (signal) => {
           const result = await searchSymbols({
             root: request.root,
             query,
             limit,
-            signal: request.signal,
+            signal,
           })
           symbols = result.hits
           if (result.truncated) truncated = true
@@ -214,12 +229,12 @@ export async function orchestrateSearch(
       errors.content = 'No content search provider'
     } else {
       const searchContent = contentProvider.searchContent.bind(contentProvider)
-      tasks.push(leg('content', async () => {
+      tasks.push(leg('content', async (signal) => {
         const result = await searchContent({
           root: request.root,
           query,
           limit,
-          signal: request.signal,
+          signal,
         })
         content = result.hits
         if (result.truncated) truncated = true

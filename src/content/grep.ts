@@ -59,12 +59,14 @@ export async function runWorkspaceGrep(
       cwd: request.root,
       stdio: ['ignore', 'pipe', 'pipe'],
       env: { ...process.env },
+      windowsHide: true,
     })
 
     let stdout = ''
     let stderr = ''
     const onAbort = (): void => {
-      child.kill('SIGTERM')
+      // Windows: SIGTERM is emulated; kill() without a signal still ends the process.
+      child.kill()
     }
     request.signal.addEventListener('abort', onAbort, { once: true })
 
