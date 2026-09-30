@@ -3,7 +3,7 @@
  */
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '../service/index.ts'
-import { openCodegraph } from './db.ts'
+import { probeCodegraphStatus } from './probe.ts'
 import { searchFilesInWorker, searchSymbolsInWorker } from './worker-search.ts'
 
 /**
@@ -13,28 +13,26 @@ export function registerCodegraphProvider(ctx: Context): void {
   ctx.effect(() => ctx.workspaceCodeSearch.register({
     id: 'codegraph',
     status(root) {
-      const opened = openCodegraph(root)
-      opened.db?.close()
-      return opened.status
+      const { dbPath: _dbPath, ...status } = probeCodegraphStatus(root)
+      return status
     },
     async searchFiles(request) {
-      const opened = openCodegraph(request.root)
-      opened.db?.close()
-      if (opened.dbPath === undefined || opened.status.codegraph !== 'ready') {
+      const probed = probeCodegraphStatus(request.root)
+      if (probed.codegraph !== 'ready' || probed.dbPath === undefined) {
         return { hits: [], truncated: false }
       }
-      return await searchFilesInWorker(opened.dbPath, request)
+      return await searchFilesInWorker(probed.dbPath, request)
     },
     async searchSymbols(request) {
-      const opened = openCodegraph(request.root)
-      opened.db?.close()
-      if (opened.dbPath === undefined || opened.status.codegraph !== 'ready') {
+      const probed = probeCodegraphStatus(request.root)
+      if (probed.codegraph !== 'ready' || probed.dbPath === undefined) {
         return { hits: [], truncated: false }
       }
-      return await searchSymbolsInWorker(opened.dbPath, request)
+      return await searchSymbolsInWorker(probed.dbPath, request)
     },
   }), 'workspace-code-search-codegraph: register')
 }
 
 export { openCodegraph } from './db.ts'
+export { probeCodegraphStatus, codegraphDbPath } from './probe.ts'
 export { isUnderRoot, scorePath, searchFiles, searchSymbols } from './search.ts'

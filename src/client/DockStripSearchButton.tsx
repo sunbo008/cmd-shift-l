@@ -1,6 +1,9 @@
 /**
  * Portals a search control into the right-Sidebar dock strip (between + and split).
  * The strip has no public Cordis slot; this mounts into `data-dockkit-strip-fill`.
+ *
+ * Never watch `document` with MutationObserver — on Windows a busy Files tree
+ * mutates constantly and that starves React, leaving the panel on「正在读取…」.
  */
 import { useEffect, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
@@ -23,9 +26,7 @@ export function DockStripSearchButton(props: DockStripSearchButtonProps): ReactN
 
   useEffect(() => {
     let disposed = false
-    let raf = 0
-    /** Skip observer callbacks caused by our own insertBefore. */
-    let ignoreMutations = false
+    let timer: ReturnType<typeof setTimeout> | undefined
 
     const locateFill = (): { strip: Element; fill: Element } | undefined => {
       const chrome = document.querySelector('[data-dockkit-strip-chrome]')
@@ -46,9 +47,7 @@ export function DockStripSearchButton(props: DockStripSearchButtonProps): ReactN
         next.style.display = 'flex'
         next.style.flex = 'none'
         next.style.alignItems = 'center'
-        ignoreMutations = true
         strip.insertBefore(next, fill)
-        ignoreMutations = false
       }
       return next
     }
@@ -57,39 +56,24 @@ export function DockStripSearchButton(props: DockStripSearchButtonProps): ReactN
       setHost((prev) => (prev === next ? prev : next))
     }
 
-    const sync = (): void => {
+    /** Fast poll until the strip exists, then rare health checks only. */
+    const pump = (delayMs: number): void => {
       if (disposed) return
-      const next = ensureHost()
-      publish(next)
-      // Once the strip host exists, drop the document-wide observer. Continuous
-      // body+subtree observation starves React/remote work on busy UIs (files
-      // panel stuck on「正在读取…」), especially on Windows.
-      if (next !== null) observer.disconnect()
+      timer = setTimeout(() => {
+        if (disposed) return
+        const next = ensureHost()
+        publish(next)
+        pump(next === null ? 150 : 5000)
+      }, delayMs)
     }
 
-    const schedule = (): void => {
-      if (disposed || ignoreMutations) return
-      cancelAnimationFrame(raf)
-      raf = requestAnimationFrame(sync)
-    }
-
-    const observer = new MutationObserver(schedule)
-    sync()
-    if (!disposed && document.querySelector(`[${HOST_ATTR}]`) === null) {
-      observer.observe(document.body, { childList: true, subtree: true })
-    }
-
-    // Sidebar chrome can remount without a full page reload; cheap recovery.
-    const retry = window.setInterval(() => {
-      if (disposed) return
-      publish(ensureHost())
-    }, 2000)
+    publish(null)
+    // Let the Files panel finish its first Remote round before we touch the strip.
+    pump(500)
 
     return () => {
       disposed = true
-      cancelAnimationFrame(raf)
-      window.clearInterval(retry)
-      observer.disconnect()
+      if (timer !== undefined) clearTimeout(timer)
       document.querySelectorAll(`[${HOST_ATTR}]`).forEach((node) => { node.remove() })
       setHost(null)
     }
