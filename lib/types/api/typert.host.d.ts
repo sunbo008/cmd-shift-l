@@ -1,9 +1,3 @@
-/**
- * Hand-written Host Typert manifest (no codegen yet).
- * Registers status/search over namespace `workspaceCodeSearch`, reusing
- * workspace-files' `workspaceFileScope` lookup (wire = SessionId).
- */
-import { z } from 'zod';
 /** Host face registered by typert-loader when this package is an active Cordis entry. */
 export declare const TYPERT: {
     package: string;
@@ -25,13 +19,17 @@ export declare const TYPERT: {
             codec: {
                 mode: "strict";
                 typeSymbol: string;
-                create: () => z.ZodType;
+                create: () => {
+                    parse(data: unknown): unknown;
+                };
             };
         }[];
         result: {
             mode: "strict";
             typeSymbol: string;
-            create: () => z.ZodType;
+            create: () => {
+                parse(data: unknown): unknown;
+            };
         };
         cancellation?: undefined;
     } | {
@@ -50,7 +48,9 @@ export declare const TYPERT: {
             codec: {
                 mode: "strict";
                 typeSymbol: string;
-                create: () => z.ZodType;
+                create: () => {
+                    parse(data: unknown): unknown;
+                };
             };
         } | {
             name: string;
@@ -59,7 +59,9 @@ export declare const TYPERT: {
             codec: {
                 mode: "strict";
                 typeSymbol: string;
-                create: () => z.ZodType;
+                create: () => {
+                    parse(data: unknown): unknown;
+                };
             };
         })[];
         cancellation: {
@@ -68,7 +70,9 @@ export declare const TYPERT: {
         result: {
             mode: "strict";
             typeSymbol: string;
-            create: () => z.ZodType;
+            create: () => {
+                parse(data: unknown): unknown;
+            };
         };
     })[];
     model: {
