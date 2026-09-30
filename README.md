@@ -11,9 +11,11 @@ dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
 dsh plugin --profile web add "github:sunbo008/cmd-shift-l#main"
 ```
 
-装完后**完全退出再开** `dsh web`。lock 版本须为 **`0.1.7-a3f766b`**。
+装完后**完全退出再开** `dsh web`。lock 版本须为 **`0.1.8-4be9cb8`**。
 
-> 本版整树回退到 `a3f766b`（2026-09-30 15:02，单包对齐后你反馈「对齐 better-sidebar」那次会话时点）。
+Chrome 请用终端打印的完整 `?token=` URL；异常时可重启浏览器或清站点数据。
+
+> 本版：`4be9cb8`（在 `a3f766b` 之后：Client 改用 zod/v4/mini，缩小浏览器包）。
 
 ## UI 入口
 

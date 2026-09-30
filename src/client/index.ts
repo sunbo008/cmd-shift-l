@@ -9,8 +9,8 @@ import workspaceCodeSearchRemote from '../api/remote.ts'
 import type { WorkspaceCodeSearchRemote } from '../api/client.ts'
 import type { CodegraphStatus, SearchResult } from '../service/types.ts'
 import type { RemoteSearchRequest, WorkspaceSearchScope } from '../api/client.ts'
-import { Config } from '../config.ts'
 import { SearchModalHost } from './SearchModalHost.tsx'
+import { resolveDebounceMs, type ClientConfig } from './client-config.ts'
 import { en, zh } from './locales.ts'
 import { createModalController, type SearchSessionScope } from './modal-controller.ts'
 
@@ -20,20 +20,19 @@ export const NS = 'workspaceCodeSearch'
 /** Cordis inject list for Client loaders. */
 export const inject = ['locale', 'shortcuts', 'slots', 'sidebarRight', 'remote', 'sessions'] as const
 
-export { Config }
-export type { Config as ConfigType }
+export type { ClientConfig }
 
 /**
  * Mount workspace code search UI and Client Remote contribution.
  * @param ctx - Client root context
- * @param config - validated Client Config
+ * @param config - optional Client debounce (Host owns search Config)
  * @returns disposer that withdraws Remote + UI effects
  */
 export async function apply(
   ctx: Context,
-  config: Config = Config({}),
+  config: ClientConfig = {},
 ): Promise<() => Promise<void>> {
-  const debounceMs = (config.debounceMs ?? 250) as number
+  const debounceMs = resolveDebounceMs(config)
   const face = ctx as unknown as ClientFace
 
   const disposeRemote = await face.remote.$mount(workspaceCodeSearchRemote)
