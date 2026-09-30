@@ -6,46 +6,36 @@
 
 ## 安装
 
-**推荐**带 `#main`，避免 `pnpm-lock` 钉死旧 commit：
+**必须**带 `#main`（或下方版本），避免 `pnpm-lock` 钉死旧 commit：
 
 ```bash
 dsh plugin --profile web add "github:sunbo008/cmd-shift-l#main"
 ```
 
-Windows（cmd / PowerShell）相同。升级或界面异常时先卸再装：
+升级或界面异常时先卸再装：
 
 ```bat
 dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
 dsh plugin --profile web add "github:sunbo008/cmd-shift-l#main"
 ```
 
-指定 commit：
+装完后**完全退出再开** `dsh web`。若报 `EADDRINUSE:3080`，结束旧进程或换端口。
 
-```bash
-dsh plugin --profile web add "github:sunbo008/cmd-shift-l#<commit-sha>"
-```
-
-装完后**完全退出再开** `dsh web`（仅刷新浏览器不够）。若报 `EADDRINUSE:3080`，先结束占用该端口的旧进程，或 `dsh web --port 3081`。
-
-> **临时（`0.1.3-noop`）：** 空 patch + 空 apply，**不加载任何 Host/Client 代码**。用于恢复 Windows 启动与 Files。查找放大镜暂无。
+> **当前：`0.1.4-restore`** — 恢复到 `385ac24` 行为（Windows 曾可用的 Client 面）：`$mount` **仅** `status` + `search`；分腿进度用三次 `search({ kinds: [one] })`，不再往 Client 挂 stream/多腿 Remote。
 
 本机调试：`pnpm install && pnpm build` →  
 `dsh plugin --profile web add /绝对路径/cmd-shift-l`。
 
-### Windows 界面卡住
+### 根因（Windows 卡界面）
 
-| 现象 | 处理 |
-|------|------|
-| 卡启动 / 会话空白 | 装 `0.1.3-noop`（本版）；lock 须含该版本 |
-| Files「正在读取…」且无放大镜 | 先确认已是 `0.1.3-noop`；若仍如此，卸掉本插件对比 |
-| 无放大镜 | 预期：Client 未启用 |
+| 阶段 | Commit | 结果 |
+|------|--------|------|
+| 可用 | `971172e` 及更早 | Client 只 mount `status`/`search`，放大镜与查找正常 |
+| 引入卡死 | `2070c42` … `f54cc17` | Client `$mount` 增加 per-leg / stream Remote，Windows 上 inject/`$mount` 堵死整页 |
+| 已收回 Client 面 | `385ac24` | 回到只 mount `status`/`search`；分腿改走三次 `search` |
+| 误伤 | `bc1e978` 之后 | fail-open / Host-only / 空 patch 等「止血」拆掉 Client，放大镜消失，问题更乱 |
 
-```bat
-dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
-dsh plugin --profile web add "github:sunbo008/cmd-shift-l#main"
-```
-
-完全退出再开 `dsh web`。lock 版本必须是 **`0.1.3-noop`**。
+若 lock 仍停在 `f54cc17` / `db2097e` 等，会一直卡——请卸装 `#main` 并确认版本为 **`0.1.4-restore`**。
 
 ## UI 入口
 

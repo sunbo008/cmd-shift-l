@@ -1,3 +1,8 @@
-# TEMPORARY: no Host insert — loading this plugin hangs Windows web startup.
-# Bundle remains installable; search Host/Client stay off until isolated.
-[]
+- insert:
+    - id: cmd-shift-l
+      name: '@dsh-plugin/cmd-shift-l'
+      config:
+        maxQueryCodeUnits: 500
+        limitPerKind: 50
+        debounceMs: 250
+        searchTimeoutMs: 10000

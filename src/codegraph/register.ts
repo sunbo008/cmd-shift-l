@@ -33,5 +33,6 @@ export function registerCodegraphProvider(ctx: Context): void {
   }), 'workspace-code-search-codegraph: register')
 }
 
+export { openCodegraph } from './db.ts'
 export { probeCodegraphStatus, codegraphDbPath } from './probe.ts'
 export { isUnderRoot, scorePath, searchFiles, searchSymbols } from './search.ts'
