@@ -2,25 +2,35 @@
 
 外部可安装的 DeepSeek Harness（dsh）工作区代码搜索 Bundle。
 
-布局对齐 [DSH-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar)：**仓库根目录单包**，`dsh.bundle` + Host/Client 同包，依赖只走 npm registry（无 monorepo `workspace:*` 子包）。仓库已提交预构建 `lib/`，git 安装**不跑**构建脚本，无需 `allowBuilds`。
+布局对齐 [DSH-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar)：**仓库根目录单包**，`dsh.bundle` + Host/Client 同包，依赖只走 npm registry。仓库已提交预构建 `lib/`，git 安装不跑构建脚本，**无需** `allowBuilds`。
 
 ## 安装
 
+任选一种 specifier（等价）：
+
 ```bash
+dsh plugin --profile web add github:sunbo008/cmd-shift-l
+dsh plugin --profile web add sunbo008/cmd-shift-l
+```
+
+Windows（cmd / PowerShell）相同：
+
+```bat
+dsh plugin --profile web add github:sunbo008/cmd-shift-l
+```
+
+若之前装过旧版（含 `prepare`、曾报 `allowBuilds`），先卸再装：
+
+```bat
+dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
 dsh plugin --profile web add github:sunbo008/cmd-shift-l
 ```
 
 指定分支 / commit：
 
 ```bash
-dsh plugin --profile web add 'github:sunbo008/cmd-shift-l#main'
-dsh plugin --profile web add 'github:sunbo008/cmd-shift-l#<commit-sha>'
-```
-
-卸载：
-
-```bash
-dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
+dsh plugin --profile web add "github:sunbo008/cmd-shift-l#main"
+dsh plugin --profile web add "github:sunbo008/cmd-shift-l#<commit-sha>"
 ```
 
 装完后**重启** `dsh web`（仅刷新浏览器不够）。
