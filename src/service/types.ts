@@ -162,4 +162,14 @@ export interface WorkspaceCodeSearch {
     limitPerKind?: number
     signal: AbortSignal
   }): Promise<ContentLegResult>
+  /**
+   * Stream content progress + final result frames.
+   * @param request - query without kinds
+   */
+  searchContentStream(request: {
+    root: AbsolutePath
+    query: string
+    limitPerKind?: number
+    signal: AbortSignal
+  }): AsyncGenerator<ContentSearchFrame, void, void>
 }

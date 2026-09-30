@@ -9,10 +9,21 @@ import { Context } from '@deepseek-ai/cordis'
 import Schema from '@deepseek-ai/schemastery'
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import type {} from '../service/index.ts'
-import type { CodegraphStatus, SearchResult } from '../service/types.ts'
-import { requireWorkspaceRoot, type RemoteSearchRequest, type WorkspaceSearchScope } from './types.ts'
+import type {
+  CodegraphStatus,
+  ContentSearchFrame,
+  FileLegResult,
+  SearchResult,
+  SymbolLegResult,
+} from '../service/types.ts'
+import {
+  requireWorkspaceRoot,
+  type RemoteLegRequest,
+  type RemoteSearchRequest,
+  type WorkspaceSearchScope,
+} from './types.ts'
 
-export type { RemoteSearchRequest, WorkspaceSearchScope } from './types.ts'
+export type { RemoteLegRequest, RemoteSearchRequest, WorkspaceSearchScope } from './types.ts'
 export type { WorkspaceCodeSearchRemote } from './client.ts'
 export { requireWorkspaceRoot } from './types.ts'
 
@@ -83,5 +94,81 @@ export default class WorkspaceCodeSearchController extends TypertRemoteService {
       const reason = error instanceof Error ? error.message : String(error)
       throw new Error(`workspace-code-search/search-failed: ${reason}`, { cause: error })
     }
+  }
+
+  /**
+   * @param workspaceFileScope - Session workspace scope
+   * @param request - query without root
+   * @param signal - cancellation
+   */
+  @Remote
+  async searchFiles(
+    workspaceFileScope: WorkspaceSearchScope,
+    request: RemoteLegRequest,
+    signal: AbortSignal,
+  ): Promise<FileLegResult> {
+    signal.throwIfAborted()
+    try {
+      const root = requireWorkspaceRoot(workspaceFileScope)
+      return await this.ctx.workspaceCodeSearch.searchFiles({
+        root,
+        query: request.query,
+        ...request.limitPerKind === undefined ? {} : { limitPerKind: request.limitPerKind },
+        signal,
+      })
+    } catch (error) {
+      signal.throwIfAborted()
+      const reason = error instanceof Error ? error.message : String(error)
+      throw new Error(`workspace-code-search/search-files-failed: ${reason}`, { cause: error })
+    }
+  }
+
+  /**
+   * @param workspaceFileScope - Session workspace scope
+   * @param request - query without root
+   * @param signal - cancellation
+   */
+  @Remote
+  async searchSymbols(
+    workspaceFileScope: WorkspaceSearchScope,
+    request: RemoteLegRequest,
+    signal: AbortSignal,
+  ): Promise<SymbolLegResult> {
+    signal.throwIfAborted()
+    try {
+      const root = requireWorkspaceRoot(workspaceFileScope)
+      return await this.ctx.workspaceCodeSearch.searchSymbols({
+        root,
+        query: request.query,
+        ...request.limitPerKind === undefined ? {} : { limitPerKind: request.limitPerKind },
+        signal,
+      })
+    } catch (error) {
+      signal.throwIfAborted()
+      const reason = error instanceof Error ? error.message : String(error)
+      throw new Error(`workspace-code-search/search-symbols-failed: ${reason}`, { cause: error })
+    }
+  }
+
+  /**
+   * Stream content progress then a final result frame.
+   * @param workspaceFileScope - Session workspace scope
+   * @param request - query without root
+   * @param signal - cancellation
+   */
+  @Remote({ mode: 'stream' })
+  searchContent(
+    workspaceFileScope: WorkspaceSearchScope,
+    request: RemoteLegRequest,
+    signal: AbortSignal,
+  ): AsyncIterable<ContentSearchFrame> {
+    signal.throwIfAborted()
+    const root = requireWorkspaceRoot(workspaceFileScope)
+    return this.ctx.workspaceCodeSearch.searchContentStream({
+      root,
+      query: request.query,
+      ...request.limitPerKind === undefined ? {} : { limitPerKind: request.limitPerKind },
+      signal,
+    })
   }
 }

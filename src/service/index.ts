@@ -12,10 +12,12 @@ import {
   runFileLeg,
   runSymbolLeg,
 } from './orchestrate.ts'
+import { iterateWorkspaceGrep } from '../content/grep.ts'
 import type {
   AbsolutePath,
   CodegraphStatus,
   ContentLegResult,
+  ContentSearchFrame,
   FileLegResult,
   SearchKind,
   SearchResult,
@@ -172,5 +174,43 @@ export default class WorkspaceCodeSearchService extends Service implements Works
       limit,
       signal: request.signal,
     })
+  }
+
+  /**
+   * Stream content progress + final result (ripgrep JSON).
+   * @param request - content-leg request
+   */
+  async *searchContentStream(request: {
+    root: AbsolutePath
+    query: string
+    limitPerKind?: number
+    signal: AbortSignal
+  }): AsyncGenerator<ContentSearchFrame, void, void> {
+    const query = normalizeQuery(request.query, this.config.maxQueryCodeUnits)
+    const limit = clampLimitPerKind(request.limitPerKind, this.config.limitPerKind)
+    const local = new AbortController()
+    const timer = setTimeout(() => {
+      local.abort(new DOMException(
+        `workspaceCodeSearch timed out after ${String(this.config.searchTimeoutMs)}ms`,
+        'TimeoutError',
+      ))
+    }, this.config.searchTimeoutMs)
+    const onParentAbort = (): void => {
+      local.abort(request.signal.reason)
+    }
+    if (request.signal.aborted) {
+      clearTimeout(timer)
+      throw request.signal.reason instanceof Error ? request.signal.reason : new Error('aborted')
+    }
+    request.signal.addEventListener('abort', onParentAbort, { once: true })
+    try {
+      yield* iterateWorkspaceGrep(
+        { root: request.root, query, limit, signal: local.signal },
+        { progressIntervalMs: 200 },
+      )
+    } finally {
+      clearTimeout(timer)
+      request.signal.removeEventListener('abort', onParentAbort)
+    }
   }
 }

@@ -1,8 +1,14 @@
 /**
  * Client-facing Remote face (hand-written until Typert codegen is wired for this package).
  */
-import type { CodegraphStatus, SearchResult } from '../service/types.ts'
-import type { RemoteSearchRequest, WorkspaceSearchScope } from './types.ts'
+import type {
+  CodegraphStatus,
+  ContentSearchFrame,
+  FileLegResult,
+  SearchResult,
+  SymbolLegResult,
+} from '../service/types.ts'
+import type { RemoteLegRequest, RemoteSearchRequest, WorkspaceSearchScope } from './types.ts'
 
 /** Browser Remote methods for workspace code search. */
 export interface WorkspaceCodeSearchRemote {
@@ -11,6 +17,7 @@ export interface WorkspaceCodeSearchRemote {
    */
   status(scope: WorkspaceSearchScope): Promise<CodegraphStatus>
   /**
+   * Full partitioned search (Agent / tools). UI prefers per-leg methods.
    * @param scope - Session workspace scope
    * @param request - query payload without root
    * @param signal - cancellation
@@ -20,6 +27,37 @@ export interface WorkspaceCodeSearchRemote {
     request: RemoteSearchRequest,
     signal: AbortSignal,
   ): Promise<SearchResult>
+  /**
+   * @param scope - Session workspace scope
+   * @param request - query without kinds
+   * @param signal - cancellation
+   */
+  searchFiles(
+    scope: WorkspaceSearchScope,
+    request: RemoteLegRequest,
+    signal: AbortSignal,
+  ): Promise<FileLegResult>
+  /**
+   * @param scope - Session workspace scope
+   * @param request - query without kinds
+   * @param signal - cancellation
+   */
+  searchSymbols(
+    scope: WorkspaceSearchScope,
+    request: RemoteLegRequest,
+    signal: AbortSignal,
+  ): Promise<SymbolLegResult>
+  /**
+   * Streaming content leg: progress frames then a result frame.
+   * @param scope - Session workspace scope
+   * @param request - query without kinds
+   * @param signal - cancellation
+   */
+  searchContent(
+    scope: WorkspaceSearchScope,
+    request: RemoteLegRequest,
+    signal: AbortSignal,
+  ): AsyncIterable<ContentSearchFrame>
 }
 
-export type { RemoteSearchRequest, WorkspaceSearchScope } from './types.ts'
+export type { RemoteLegRequest, RemoteSearchRequest, WorkspaceSearchScope } from './types.ts'
