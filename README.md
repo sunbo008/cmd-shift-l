@@ -11,11 +11,11 @@ dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
 dsh plugin --profile web add "github:sunbo008/cmd-shift-l#main"
 ```
 
-装完后**完全退出再开** `dsh web`。lock 版本须为 **`0.1.9-9f5674a`**。
+装完后**完全退出再开** `dsh web`。lock 版本须为 **`0.1.10-f11dde2`**。
 
 Chrome 请用终端打印的完整 `?token=` URL。
 
-> 本版：`9f5674a`（dock 放大镜不再对 document 做持续 MutationObserver）。上一档 `0.1.8-4be9cb8` 已确认可用。
+> 本版：`f11dde2`（SQLite 改 worker，超时真正中止，Client 兜底）。上一档 `0.1.9-9f5674a` 已确认可用。
 
 ## UI 入口
 

@@ -61,12 +61,13 @@ export async function listFilesByQuery(
       cwd: request.root,
       stdio: ['ignore', 'pipe', 'pipe'],
       env: { ...process.env },
+      windowsHide: true,
     })
 
     let stdout = ''
     let stderr = ''
     const onAbort = (): void => {
-      child.kill('SIGTERM')
+      child.kill()
     }
     request.signal.addEventListener('abort', onAbort, { once: true })
 
