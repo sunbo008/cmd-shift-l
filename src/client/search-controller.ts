@@ -15,8 +15,6 @@ export interface SearchUiConfig {
    * Defaults to Host searchTimeoutMs + 5000 when unset.
    */
   readonly clientTimeoutMs?: number
-  /** Content-leg limit used for soft ETA (Host default 50). */
-  readonly limitPerKind?: number
 }
 
 const DEFAULT_CLIENT_TIMEOUT_MS = 15_000
@@ -24,7 +22,7 @@ const DEFAULT_CLIENT_TIMEOUT_MS = 15_000
 /** Per-leg UI status. */
 export type LegStatus = 'idle' | 'running' | 'done' | 'error'
 
-/** Content-leg live progress for the footer. */
+/** Content-leg live progress for the footer (reserved; unary content has none). */
 export interface ContentLegProgress {
   readonly matched: number
   readonly pathHint?: string
@@ -66,7 +64,9 @@ export function shouldSkipSearch(query: string, kinds: readonly SearchKind[]): b
 }
 
 /**
- * Debounced parallel per-leg Remote search with AbortController + seq.
+ * Debounced parallel per-kind Remote.search with AbortController + seq.
+ * Uses three unary `search({ kinds: [one] })` calls so Client `$mount` stays
+ * on the historical status+search surface (Windows-safe).
  */
 export class SearchRequestController {
   private debounceTimer: ReturnType<typeof setTimeout> | undefined
@@ -163,90 +163,42 @@ export class SearchRequestController {
       emit(false)
     }, timeoutMs)
 
-    const tasks: Array<Promise<void>> = []
-
-    if (kindSet.has('file')) {
-      tasks.push((async () => {
-        try {
-          const result = await this.remote.searchFiles(
-            this.scope,
-            { query },
-            controller.signal,
-          )
-          if (seq !== this.issuedSeq) return
-          files = result.hits
-          if (result.truncated) truncated = true
-          if (result.error !== undefined) errors.file = result.error
-          legs.file = result.error !== undefined ? 'error' : 'done'
-        } catch (error) {
-          if (seq !== this.issuedSeq) return
-          if (controller.signal.aborted) {
-            legs.file = 'idle'
-            return
-          }
-          legs.file = 'error'
-          errors.file = error instanceof Error ? error.message : String(error)
+    const runKind = async (kind: SearchKind): Promise<void> => {
+      try {
+        const result = await this.remote.search(
+          this.scope,
+          { query, kinds: [kind] },
+          controller.signal,
+        )
+        if (seq !== this.issuedSeq) return
+        if (kind === 'file') {
+          files = result.files
+          if (result.errors?.file !== undefined) errors.file = result.errors.file
+          legs.file = result.errors?.file !== undefined ? 'error' : 'done'
+        } else if (kind === 'symbol') {
+          symbols = result.symbols
+          if (result.errors?.symbol !== undefined) errors.symbol = result.errors.symbol
+          legs.symbol = result.errors?.symbol !== undefined ? 'error' : 'done'
+        } else {
+          content = result.content
+          if (result.errors?.content !== undefined) errors.content = result.errors.content
+          legs.content = result.errors?.content !== undefined ? 'error' : 'done'
         }
-        emit(legs.file === 'running' || legs.symbol === 'running' || legs.content === 'running')
-      })())
+        if (result.truncated) truncated = true
+        if (result.errors?.codegraph !== undefined) errors.codegraph = result.errors.codegraph
+      } catch (error) {
+        if (seq !== this.issuedSeq) return
+        if (controller.signal.aborted) {
+          legs[kind] = 'idle'
+          return
+        }
+        legs[kind] = 'error'
+        errors[kind] = error instanceof Error ? error.message : String(error)
+      }
+      emit(legs.file === 'running' || legs.symbol === 'running' || legs.content === 'running')
     }
 
-    if (kindSet.has('symbol')) {
-      tasks.push((async () => {
-        try {
-          const result = await this.remote.searchSymbols(
-            this.scope,
-            { query },
-            controller.signal,
-          )
-          if (seq !== this.issuedSeq) return
-          symbols = result.hits
-          if (result.truncated) truncated = true
-          if (result.error !== undefined) errors.symbol = result.error
-          legs.symbol = result.error !== undefined ? 'error' : 'done'
-        } catch (error) {
-          if (seq !== this.issuedSeq) return
-          if (controller.signal.aborted) {
-            legs.symbol = 'idle'
-            return
-          }
-          legs.symbol = 'error'
-          errors.symbol = error instanceof Error ? error.message : String(error)
-        }
-        emit(legs.file === 'running' || legs.symbol === 'running' || legs.content === 'running')
-      })())
-    }
-
-    if (kindSet.has('content')) {
-      tasks.push((async () => {
-        try {
-          const result = await this.remote.searchContent(
-            this.scope,
-            { query },
-            controller.signal,
-          )
-          if (seq !== this.issuedSeq) return
-          content = result.hits
-          if (result.truncated) truncated = true
-          if (result.error !== undefined) {
-            errors.content = result.error
-            legs.content = 'error'
-          } else {
-            legs.content = 'done'
-          }
-        } catch (error) {
-          if (seq !== this.issuedSeq) return
-          if (controller.signal.aborted) {
-            legs.content = 'idle'
-            return
-          }
-          legs.content = 'error'
-          errors.content = error instanceof Error ? error.message : String(error)
-        }
-        emit(legs.file === 'running' || legs.symbol === 'running' || legs.content === 'running')
-      })())
-    }
-
+    const tasks = kinds.map(kind => runKind(kind))
     try {
       await Promise.all(tasks)
     } finally {

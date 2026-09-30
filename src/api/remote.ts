@@ -1,29 +1,17 @@
 /**
  * Hand-written Client Remote contribution for `$mount`.
- * Descriptors must match {@link ./typert.host.ts} invocations.
+ * Descriptors must match {@link ./typert.host.ts} invocations for mounted methods.
+ *
+ * Only `status` + `search` are mounted on the Client. Extra Host leg methods stay
+ * Host-only: expanding Client `$mount` previously hung Windows UI inject.
  */
 import type { TypertRemoteContribution } from '@deepseek-ai/dsh-typert-protocol'
 import {
-  contentLegResultSchema,
-  fileLegResultSchema,
-  legRequestSchema,
   scopeLookup,
   searchRequestSchema,
   searchResultSchema,
   statusResultSchema,
-  symbolLegResultSchema,
 } from './schemas.ts'
-
-const legRequestParam = {
-  name: 'request',
-  wire: 'request',
-  source: 'json' as const,
-  codec: {
-    mode: 'strict' as const,
-    typeSymbol: '@dsh-plugin/cmd-shift-l#RemoteLegRequest',
-    create: legRequestSchema,
-  },
-}
 
 /** Client contribution mounted by the UI plugin. */
 export const TYPERT_REMOTE: TypertRemoteContribution = {
@@ -66,48 +54,6 @@ export const TYPERT_REMOTE: TypertRemoteContribution = {
         mode: 'strict',
         typeSymbol: '@dsh-plugin/cmd-shift-l#SearchResult',
         create: searchResultSchema,
-      },
-    },
-    {
-      id: '@dsh-plugin/cmd-shift-l#workspaceCodeSearch/searchFiles',
-      service: 'workspaceCodeSearchController',
-      namespace: 'workspaceCodeSearch',
-      method: 'searchFiles',
-      invocation: { kind: 'direct' },
-      parameters: [scopeLookup, legRequestParam],
-      cancellation: { parameter: 'signal' },
-      result: {
-        mode: 'strict',
-        typeSymbol: '@dsh-plugin/cmd-shift-l#FileLegResult',
-        create: fileLegResultSchema,
-      },
-    },
-    {
-      id: '@dsh-plugin/cmd-shift-l#workspaceCodeSearch/searchSymbols',
-      service: 'workspaceCodeSearchController',
-      namespace: 'workspaceCodeSearch',
-      method: 'searchSymbols',
-      invocation: { kind: 'direct' },
-      parameters: [scopeLookup, legRequestParam],
-      cancellation: { parameter: 'signal' },
-      result: {
-        mode: 'strict',
-        typeSymbol: '@dsh-plugin/cmd-shift-l#SymbolLegResult',
-        create: symbolLegResultSchema,
-      },
-    },
-    {
-      id: '@dsh-plugin/cmd-shift-l#workspaceCodeSearch/searchContent',
-      service: 'workspaceCodeSearchController',
-      namespace: 'workspaceCodeSearch',
-      method: 'searchContent',
-      invocation: { kind: 'direct' },
-      parameters: [scopeLookup, legRequestParam],
-      cancellation: { parameter: 'signal' },
-      result: {
-        mode: 'strict',
-        typeSymbol: '@dsh-plugin/cmd-shift-l#ContentLegResult',
-        create: contentLegResultSchema,
       },
     },
   ],

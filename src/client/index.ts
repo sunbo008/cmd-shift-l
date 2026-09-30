@@ -7,14 +7,8 @@
 import type { Context } from '@deepseek-ai/cordis'
 import workspaceCodeSearchRemote from '../api/remote.ts'
 import type { WorkspaceCodeSearchRemote } from '../api/client.ts'
-import type {
-  CodegraphStatus,
-  ContentLegResult,
-  FileLegResult,
-  SearchResult,
-  SymbolLegResult,
-} from '../service/types.ts'
-import type { RemoteLegRequest, RemoteSearchRequest, WorkspaceSearchScope } from '../api/client.ts'
+import type { CodegraphStatus, SearchResult } from '../service/types.ts'
+import type { RemoteSearchRequest, WorkspaceSearchScope } from '../api/client.ts'
 import { SearchModalHost } from './SearchModalHost.tsx'
 import { resolveDebounceMs, type ClientConfig } from './client-config.ts'
 import { en, zh } from './locales.ts'
@@ -217,33 +211,6 @@ function adaptRemote(ns: WireWorkspaceCodeSearch): WorkspaceCodeSearchRemote {
       if (!result.ok) throw result.error
       return result.value
     },
-    async searchFiles(
-      scope: WorkspaceSearchScope,
-      request: RemoteLegRequest,
-      signal: AbortSignal,
-    ): Promise<FileLegResult> {
-      const result = await ns.searchFiles(scope.sessionId, request, signal)
-      if (!result.ok) throw result.error
-      return result.value
-    },
-    async searchSymbols(
-      scope: WorkspaceSearchScope,
-      request: RemoteLegRequest,
-      signal: AbortSignal,
-    ): Promise<SymbolLegResult> {
-      const result = await ns.searchSymbols(scope.sessionId, request, signal)
-      if (!result.ok) throw result.error
-      return result.value
-    },
-    async searchContent(
-      scope: WorkspaceSearchScope,
-      request: RemoteLegRequest,
-      signal: AbortSignal,
-    ): Promise<ContentLegResult> {
-      const result = await ns.searchContent(scope.sessionId, request, signal)
-      if (!result.ok) throw result.error
-      return result.value
-    },
   }
 }
 
@@ -255,21 +222,6 @@ interface WireWorkspaceCodeSearch {
     request: RemoteSearchRequest,
     signal: AbortSignal,
   ): Promise<RemoteOk<SearchResult>>
-  searchFiles(
-    sessionId: string,
-    request: RemoteLegRequest,
-    signal: AbortSignal,
-  ): Promise<RemoteOk<FileLegResult>>
-  searchSymbols(
-    sessionId: string,
-    request: RemoteLegRequest,
-    signal: AbortSignal,
-  ): Promise<RemoteOk<SymbolLegResult>>
-  searchContent(
-    sessionId: string,
-    request: RemoteLegRequest,
-    signal: AbortSignal,
-  ): Promise<RemoteOk<ContentLegResult>>
 }
 
 type RemoteOk<T> =
