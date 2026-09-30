@@ -1,13 +1,12 @@
 /**
  * Host entry for @dsh-plugin/cmd-shift-l.
- * Registers search service, providers, and Typert Remote in one Cordis plugin.
+ *
+ * TEMPORARY: apply is a no-op so Windows web can boot while we isolate the hang.
+ * Search Host / Remote / providers are disabled until Sessions + Files stay responsive
+ * with this package installed.
  */
 import type { Context } from '@deepseek-ai/cordis'
 import { Config } from './config.ts'
-import WorkspaceCodeSearchService from './service/index.ts'
-import WorkspaceCodeSearchController from './api/index.ts'
-import { registerCodegraphProvider } from './codegraph/register.ts'
-import { registerContentProvider } from './content/register.ts'
 
 export const name = 'cmd-shift-l'
 export { Config }
@@ -28,28 +27,10 @@ export type {
 export { asAbsolutePath } from './service/types.ts'
 
 /**
- * @param ctx - Cordis host context
- * @param config - validated bundle config
+ * @param _ctx - Cordis host context (unused while inert)
+ * @param _config - validated bundle config (unused while inert)
  */
-export function apply(ctx: Context, config: Config): void {
-  ctx.plugin(WorkspaceCodeSearchService, {
-    maxQueryCodeUnits: config.maxQueryCodeUnits,
-    limitPerKind: config.limitPerKind,
-    debounceMs: config.debounceMs,
-    searchTimeoutMs: config.searchTimeoutMs,
-  })
-  // Defer provider + Remote registration so Host boot (Sessions / Files) is not
-  // delayed by this plugin's TYPERT wiring on Windows.
-  ctx.inject(['workspaceCodeSearch'], (scoped) => {
-    scoped.effect(() => {
-      const timer = setTimeout(() => {
-        registerCodegraphProvider(scoped)
-        registerContentProvider(scoped)
-        scoped.plugin(WorkspaceCodeSearchController, {})
-      }, 0)
-      return () => {
-        clearTimeout(timer)
-      }
-    }, 'cmd-shift-l: deferred providers')
-  })
+export function apply(_ctx: Context, _config: Config): void {
+  // Intentionally empty: previous Host wiring (service + Typert Remote) still
+  // coincided with Windows web UI stalls after Client was removed.
 }

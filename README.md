@@ -27,14 +27,14 @@ dsh plugin --profile web add "github:sunbo008/cmd-shift-l#<commit-sha>"
 
 装完后**完全退出再开** `dsh web`（仅刷新浏览器不够）。若报 `EADDRINUSE:3080`，先结束占用该端口的旧进程，或 `dsh web --port 3081`。
 
-> **临时：** 当前发布为 **Host-only**（已去掉 `dsh.client`），避免 Windows Desktop 加载 Client 插件时整页卡死。会话/Files 应正常；搜索放大镜暂不可用。恢复 Client UI 前请先确认本版在 Windows 上不再卡界面。
+> **临时隔离：** 当前包 **不加载 Client、也不插入 Host 行**（空 `cordis.patch.yml` + 空 `apply`）。装上后应与卸插件时一样能正常用会话/Files；搜索功能暂不可用。用来确认「装上就卡」是否已消失；若仍卡，请把 `%USERPROFILE%\.dsh\profiles\web\pnpm-lock.yaml` 里 `cmd-shift-l` 的 tar.gz commit 发出来。
 
 本机调试：`pnpm install && pnpm build` →  
 `dsh plugin --profile web add /绝对路径/cmd-shift-l`。
 
 ### Windows 界面卡住 / 白屏
 
-1. 确认 lock 已到最新：在 `%USERPROFILE%\.dsh\profiles\web\pnpm-lock.yaml` 搜 `cmd-shift-l`，应含本机刚 `add "#main"` 时拉到的 commit（勿停在 `bc1e978` 及更早）。
+1. 确认 lock 已到最新：在 `%USERPROFILE%\.dsh\profiles\web\pnpm-lock.yaml` 搜 `cmd-shift-l`，应含本机刚 `add "#main"` 时拉到的 commit（勿停在 `71f84a0` / `bc1e978` 及更早）。
 2. 看启动日志：`%USERPROFILE%\.dsh\logs\startup-*.log`（若只有 `EADDRINUSE` 是端口问题，不是本插件）。
 3. 卸掉本插件后若界面恢复 → 再按上面「先卸再装 `#main`」强制升级。
 

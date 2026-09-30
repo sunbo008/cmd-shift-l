@@ -1,6 +1,9 @@
 /**
  * Host entry for @dsh-plugin/cmd-shift-l.
- * Registers search service, providers, and Typert Remote in one Cordis plugin.
+ *
+ * TEMPORARY: apply is a no-op so Windows web can boot while we isolate the hang.
+ * Search Host / Remote / providers are disabled until Sessions + Files stay responsive
+ * with this package installed.
  */
 import type { Context } from '@deepseek-ai/cordis';
 import { Config } from './config.ts';
@@ -10,8 +13,8 @@ export type { Config as ConfigType } from './config.ts';
 export type { AbsolutePath, CodegraphStatus, ContentHit, FileHit, ProviderSearchRequest, SearchKind, SearchResult, SymbolHit, WorkspaceCodeSearch, WorkspaceCodeSearchProvider, } from './service/types.ts';
 export { asAbsolutePath } from './service/types.ts';
 /**
- * @param ctx - Cordis host context
- * @param config - validated bundle config
+ * @param _ctx - Cordis host context (unused while inert)
+ * @param _config - validated bundle config (unused while inert)
  */
-export declare function apply(ctx: Context, config: Config): void;
+export declare function apply(_ctx: Context, _config: Config): void;
 //# sourceMappingURL=index.d.ts.map
