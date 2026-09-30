@@ -11,13 +11,11 @@ dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
 dsh plugin --profile web add "github:sunbo008/cmd-shift-l#main"
 ```
 
-装完后**完全退出再开** `dsh web`。lock 版本须为 **`0.1.13-pin-e3e6a8f`**。
+装完后**完全退出再开** `dsh web`。lock 版本须为 **`0.1.14-lazy-sqlite`**。
 
 Chrome 请用终端打印的完整 `?token=` URL。
 
-> **当前钉在 `e3e6a8f`（可用）。** `971172e`（0.1.12）在 Windows 上会卡界面，已回退。勿使用 `0.1.12-971172e`。
-
-已知回归点：`971172e` 相对 `e3e6a8f` 只改了 Dock 放大镜挂载方式 + `status` 改 probe；其中至少一项在 Windows 上触发整页卡住。
+> **`0.1.14-lazy-sqlite`：** 在可用的 `e3e6a8f` 基础上，Host 启动不再静态加载 `node:sqlite`；`status` 只做文件探测，SQLite 仅在搜索 Worker 里打开。未改 Dock 挂载（`971172e` 那套曾卡界面）。
 
 ## UI 入口
 
