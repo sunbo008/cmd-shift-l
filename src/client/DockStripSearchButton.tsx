@@ -23,15 +23,22 @@ export function DockStripSearchButton(props: DockStripSearchButtonProps): ReactN
 
   useEffect(() => {
     let disposed = false
-    const sync = (): void => {
-      if (disposed) return
+    let raf = 0
+    /** Skip observer callbacks caused by our own insertBefore. */
+    let ignoreMutations = false
+
+    const locateFill = (): { strip: Element; fill: Element } | undefined => {
       const chrome = document.querySelector('[data-dockkit-strip-chrome]')
       const strip = chrome?.closest('[data-dockkit-strip]')
       const fill = strip?.querySelector('[data-dockkit-strip-fill]')
-      if (strip === null || strip === undefined || fill === null || fill === undefined) {
-        setHost(null)
-        return
-      }
+      if (strip == null || fill == null) return undefined
+      return { strip, fill }
+    }
+
+    const ensureHost = (): HTMLElement | null => {
+      const located = locateFill()
+      if (located === undefined) return null
+      const { strip, fill } = located
       let next = strip.querySelector<HTMLElement>(`[${HOST_ATTR}]`)
       if (next === null) {
         next = document.createElement('div')
@@ -39,15 +46,49 @@ export function DockStripSearchButton(props: DockStripSearchButtonProps): ReactN
         next.style.display = 'flex'
         next.style.flex = 'none'
         next.style.alignItems = 'center'
+        ignoreMutations = true
         strip.insertBefore(next, fill)
+        ignoreMutations = false
       }
-      setHost(next)
+      return next
     }
+
+    const publish = (next: HTMLElement | null): void => {
+      setHost((prev) => (prev === next ? prev : next))
+    }
+
+    const sync = (): void => {
+      if (disposed) return
+      const next = ensureHost()
+      publish(next)
+      // Once the strip host exists, drop the document-wide observer. Continuous
+      // body+subtree observation starves React/remote work on busy UIs (files
+      // panel stuck on「正在读取…」), especially on Windows.
+      if (next !== null) observer.disconnect()
+    }
+
+    const schedule = (): void => {
+      if (disposed || ignoreMutations) return
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(sync)
+    }
+
+    const observer = new MutationObserver(schedule)
     sync()
-    const observer = new MutationObserver(sync)
-    observer.observe(document.body, { childList: true, subtree: true })
+    if (!disposed && document.querySelector(`[${HOST_ATTR}]`) === null) {
+      observer.observe(document.body, { childList: true, subtree: true })
+    }
+
+    // Sidebar chrome can remount without a full page reload; cheap recovery.
+    const retry = window.setInterval(() => {
+      if (disposed) return
+      publish(ensureHost())
+    }, 2000)
+
     return () => {
       disposed = true
+      cancelAnimationFrame(raf)
+      window.clearInterval(retry)
       observer.disconnect()
       document.querySelectorAll(`[${HOST_ATTR}]`).forEach((node) => { node.remove() })
       setHost(null)

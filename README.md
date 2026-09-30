@@ -11,11 +11,11 @@ dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
 dsh plugin --profile web add "github:sunbo008/cmd-shift-l#main"
 ```
 
-装完后**完全退出再开** `dsh web`。lock 版本须为 **`0.1.8-4be9cb8`**。
+装完后**完全退出再开** `dsh web`。lock 版本须为 **`0.1.9-9f5674a`**。
 
-Chrome 请用终端打印的完整 `?token=` URL；异常时可重启浏览器或清站点数据。
+Chrome 请用终端打印的完整 `?token=` URL。
 
-> 本版：`4be9cb8`（在 `a3f766b` 之后：Client 改用 zod/v4/mini，缩小浏览器包）。
+> 本版：`9f5674a`（dock 放大镜不再对 document 做持续 MutationObserver）。上一档 `0.1.8-4be9cb8` 已确认可用。
 
 ## UI 入口
 
@@ -25,9 +25,5 @@ Chrome 请用终端打印的完整 `?token=` URL；异常时可重启浏览器�
 ## 开发
 
 ```bash
-pnpm install
-pnpm test
-pnpm build
+pnpm install && pnpm test && pnpm build
 ```
-
-改源码后请 `pnpm build` 并提交更新后的 `lib/`。
