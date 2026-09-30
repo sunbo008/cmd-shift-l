@@ -43,10 +43,14 @@ dsh plugin --profile web add "github:sunbo008/cmd-shift-l#<commit-sha>"
 - 右侧栏顶栏（`+` 与分栏之间）放大镜
 - Desktop `Cmd/Ctrl+Shift+F`；Web `Cmd/Ctrl+Shift+L`
 
+搜索弹窗按**文件 / 符号 / 内容**分腿并行：某一腿结束即刷新该分区；内容腿页脚显示匹配进度与软 ETA（「约」）。改词会立即取消旧搜。
+
 ## 文档
 
 - [设计说明](docs/specs/2026-09-29-workspace-code-search-design.md)
+- [分腿进度设计](docs/specs/2026-09-30-search-progress-streaming-design.md)
 - [实现计划](docs/plans/2026-09-30-workspace-code-search.md)
+- [分腿进度实现计划](docs/plans/2026-09-30-search-progress-streaming.md)
 - [发布到 npm](docs/publish-npm.md)
 
 ## 开发

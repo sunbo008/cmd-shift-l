@@ -32,11 +32,56 @@ export declare const TYPERT: {
             };
         };
         cancellation?: undefined;
+        mode?: undefined;
     } | {
         id: string;
         service: string;
         namespace: string;
         method: string;
+        invocation: {
+            kind: "direct";
+        };
+        parameters: ({
+            name: string;
+            wire: string;
+            source: "lookup";
+            lookup: string;
+            codec: {
+                mode: "strict";
+                typeSymbol: string;
+                create: () => {
+                    parse(data: unknown): unknown;
+                };
+            };
+        } | {
+            name: string;
+            wire: string;
+            source: "json";
+            codec: {
+                mode: "strict";
+                typeSymbol: string;
+                create: () => {
+                    parse(data: unknown): unknown;
+                };
+            };
+        })[];
+        cancellation: {
+            parameter: "signal";
+        };
+        result: {
+            mode: "strict";
+            typeSymbol: string;
+            create: () => {
+                parse(data: unknown): unknown;
+            };
+        };
+        mode?: undefined;
+    } | {
+        id: string;
+        service: string;
+        namespace: string;
+        method: string;
+        mode: "stream";
         invocation: {
             kind: "direct";
         };

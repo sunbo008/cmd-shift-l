@@ -8,9 +8,9 @@
 import { Context } from '@deepseek-ai/cordis';
 import Schema from '@deepseek-ai/schemastery';
 import { TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';
-import type { CodegraphStatus, SearchResult } from '../service/types.ts';
-import { type RemoteSearchRequest, type WorkspaceSearchScope } from './types.ts';
-export type { RemoteSearchRequest, WorkspaceSearchScope } from './types.ts';
+import type { CodegraphStatus, ContentSearchFrame, FileLegResult, SearchResult, SymbolLegResult } from '../service/types.ts';
+import { type RemoteLegRequest, type RemoteSearchRequest, type WorkspaceSearchScope } from './types.ts';
+export type { RemoteLegRequest, RemoteSearchRequest, WorkspaceSearchScope } from './types.ts';
 export type { WorkspaceCodeSearchRemote } from './client.ts';
 export { requireWorkspaceRoot } from './types.ts';
 declare module '@deepseek-ai/cordis' {
@@ -44,5 +44,24 @@ export default class WorkspaceCodeSearchController extends TypertRemoteService {
      * @param signal - cancellation
      */
     search(workspaceFileScope: WorkspaceSearchScope, request: RemoteSearchRequest, signal: AbortSignal): Promise<SearchResult>;
+    /**
+     * @param workspaceFileScope - Session workspace scope
+     * @param request - query without root
+     * @param signal - cancellation
+     */
+    searchFiles(workspaceFileScope: WorkspaceSearchScope, request: RemoteLegRequest, signal: AbortSignal): Promise<FileLegResult>;
+    /**
+     * @param workspaceFileScope - Session workspace scope
+     * @param request - query without root
+     * @param signal - cancellation
+     */
+    searchSymbols(workspaceFileScope: WorkspaceSearchScope, request: RemoteLegRequest, signal: AbortSignal): Promise<SymbolLegResult>;
+    /**
+     * Stream content progress then a final result frame.
+     * @param workspaceFileScope - Session workspace scope
+     * @param request - query without root
+     * @param signal - cancellation
+     */
+    searchContent(workspaceFileScope: WorkspaceSearchScope, request: RemoteLegRequest, signal: AbortSignal): AsyncIterable<ContentSearchFrame>;
 }
 //# sourceMappingURL=index.d.ts.map
