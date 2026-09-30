@@ -38,9 +38,18 @@ export function apply(ctx: Context, config: Config): void {
     debounceMs: config.debounceMs,
     searchTimeoutMs: config.searchTimeoutMs,
   })
+  // Defer provider + Remote registration so Host boot (Sessions / Files) is not
+  // delayed by this plugin's TYPERT wiring on Windows.
   ctx.inject(['workspaceCodeSearch'], (scoped) => {
-    registerCodegraphProvider(scoped)
-    registerContentProvider(scoped)
-    scoped.plugin(WorkspaceCodeSearchController, {})
+    scoped.effect(() => {
+      const timer = setTimeout(() => {
+        registerCodegraphProvider(scoped)
+        registerContentProvider(scoped)
+        scoped.plugin(WorkspaceCodeSearchController, {})
+      }, 0)
+      return () => {
+        clearTimeout(timer)
+      }
+    }, 'cmd-shift-l: deferred providers')
   })
 }

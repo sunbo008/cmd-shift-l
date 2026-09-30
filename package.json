@@ -42,16 +42,6 @@
     "bundle": {
       "patch": "./cordis.patch.yml"
     },
-    "client": {
-      "inject": [
-        "@deepseek-ai/dsh-api-remotes",
-        "@deepseek-ai/dsh-api-session-controller",
-        "@deepseek-ai/dsh-client-locale",
-        "@deepseek-ai/dsh-client-shortcuts",
-        "@deepseek-ai/dsh-client-ui-sidebar-right"
-      ],
-      "platform": "web"
-    },
     "manifestVersion": 1
   },
   "scripts": {
