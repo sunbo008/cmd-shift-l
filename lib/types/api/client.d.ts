@@ -1,7 +1,7 @@
 /**
  * Client-facing Remote face (hand-written until Typert codegen is wired for this package).
  */
-import type { CodegraphStatus, ContentSearchFrame, FileLegResult, SearchResult, SymbolLegResult } from '../service/types.ts';
+import type { CodegraphStatus, ContentLegResult, FileLegResult, SearchResult, SymbolLegResult } from '../service/types.ts';
 import type { RemoteLegRequest, RemoteSearchRequest, WorkspaceSearchScope } from './types.ts';
 /** Browser Remote methods for workspace code search. */
 export interface WorkspaceCodeSearchRemote {
@@ -29,12 +29,12 @@ export interface WorkspaceCodeSearchRemote {
      */
     searchSymbols(scope: WorkspaceSearchScope, request: RemoteLegRequest, signal: AbortSignal): Promise<SymbolLegResult>;
     /**
-     * Streaming content leg: progress frames then a result frame.
+     * Content leg (unary Promise — stream Remote broke Client `$mount` / inject).
      * @param scope - Session workspace scope
      * @param request - query without kinds
      * @param signal - cancellation
      */
-    searchContent(scope: WorkspaceSearchScope, request: RemoteLegRequest, signal: AbortSignal): AsyncIterable<ContentSearchFrame>;
+    searchContent(scope: WorkspaceSearchScope, request: RemoteLegRequest, signal: AbortSignal): Promise<ContentLegResult>;
 }
 export type { RemoteLegRequest, RemoteSearchRequest, WorkspaceSearchScope } from './types.ts';
 //# sourceMappingURL=client.d.ts.map

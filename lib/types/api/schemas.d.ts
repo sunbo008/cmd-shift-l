@@ -14,7 +14,9 @@ export declare const legRequestSchema: () => ZodType;
 export declare const fileLegResultSchema: () => ZodType;
 /** Symbol-leg result. */
 export declare const symbolLegResultSchema: () => ZodType;
-/** One streaming content-search frame. */
+/** Content-leg unary result. */
+export declare const contentLegResultSchema: () => ZodType;
+/** One streaming content-search frame (Host-local / future use). */
 export declare const contentFrameSchema: () => ZodType;
 /** Partitioned search result. */
 export declare const searchResultSchema: () => ZodType;

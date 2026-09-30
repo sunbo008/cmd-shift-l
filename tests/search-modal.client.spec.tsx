@@ -15,25 +15,16 @@ afterEach(() => {
 
 const SCOPE = { sessionId: 's1', workspaceRoot: '/ws' }
 
-async function* contentResult(preview: string): AsyncGenerator<{
-  type: 'result'
-  hits: Array<{ path: string; line: number; preview: string }>
-  truncated: boolean
-}> {
-  yield {
-    type: 'result',
-    hits: [{ path: 'a.ts', line: 1, preview }],
-    truncated: false,
-  }
-}
-
 function mockRemote(overrides: Partial<WorkspaceCodeSearchRemote> = {}): WorkspaceCodeSearchRemote {
   return {
     status: vi.fn().mockResolvedValue({ codegraph: 'ready' }),
     search: vi.fn(),
     searchFiles: vi.fn().mockResolvedValue({ hits: [], truncated: false }),
     searchSymbols: vi.fn().mockResolvedValue({ hits: [], truncated: false }),
-    searchContent: vi.fn().mockImplementation(() => contentResult('hit-body')),
+    searchContent: vi.fn().mockResolvedValue({
+      hits: [{ path: 'a.ts', line: 1, preview: 'hit-body' }],
+      truncated: false,
+    }),
     ...overrides,
   } as WorkspaceCodeSearchRemote
 }
@@ -62,21 +53,18 @@ describe('SearchRequestController', () => {
 
   it('surfaces symbols before content finishes', async () => {
     vi.useFakeTimers()
-    let finishContent!: () => void
+    let finishContent!: (value: {
+      hits: Array<{ path: string; line: number; preview: string }>
+      truncated: boolean
+    }) => void
     const remote = mockRemote({
       searchSymbols: vi.fn().mockResolvedValue({
         hits: [{ path: 'a.ts', name: 'Foo', kind: 'class' }],
         truncated: false,
       }),
-      searchContent: vi.fn().mockImplementation(async function* () {
-        yield { type: 'progress', matched: 1, pathHint: 'b.ts' }
-        await new Promise<void>((r) => { finishContent = r })
-        yield {
-          type: 'result',
-          hits: [{ path: 'b.ts', line: 1, preview: 'x' }],
-          truncated: false,
-        }
-      }),
+      searchContent: vi.fn().mockImplementation(() => new Promise((resolve) => {
+        finishContent = resolve
+      })),
     })
     const snapshots: Array<{ symbols: number; searching: boolean }> = []
     const controller = new SearchRequestController(
@@ -92,9 +80,8 @@ describe('SearchRequestController', () => {
     await vi.advanceTimersByTimeAsync(1)
     await Promise.resolve()
     await Promise.resolve()
-    await Promise.resolve()
     expect(snapshots.some(s => s.symbols === 1 && s.searching)).toBe(true)
-    finishContent()
+    finishContent({ hits: [{ path: 'b.ts', line: 1, preview: 'x' }], truncated: false })
     await Promise.resolve()
     await Promise.resolve()
     controller.dispose()
@@ -102,22 +89,15 @@ describe('SearchRequestController', () => {
 
   it('ignores stale responses via seq guard', async () => {
     vi.useFakeTimers()
-    let resolveFirst!: () => void
+    let resolveFirst!: (value: {
+      hits: Array<{ path: string; line: number; preview: string }>
+      truncated: boolean
+    }) => void
     const searchContent = vi.fn()
-      .mockImplementationOnce(async function* () {
-        await new Promise<void>((r) => { resolveFirst = r })
-        yield {
-          type: 'result',
-          hits: [{ path: 'a.ts', line: 1, preview: 'first' }],
-          truncated: false,
-        }
-      })
-      .mockImplementationOnce(async function* () {
-        yield {
-          type: 'result',
-          hits: [{ path: 'a.ts', line: 1, preview: 'second' }],
-          truncated: false,
-        }
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveFirst = resolve }))
+      .mockResolvedValueOnce({
+        hits: [{ path: 'a.ts', line: 1, preview: 'second' }],
+        truncated: false,
       })
     const remote = mockRemote({ searchContent })
     const seen: string[] = []
@@ -136,7 +116,10 @@ describe('SearchRequestController', () => {
     controller.schedule('ab', ['content'])
     await vi.advanceTimersByTimeAsync(15)
     await Promise.resolve()
-    resolveFirst()
+    resolveFirst({
+      hits: [{ path: 'a.ts', line: 1, preview: 'first' }],
+      truncated: false,
+    })
     await Promise.resolve()
     await Promise.resolve()
     expect(seen).toEqual(['second'])
@@ -172,15 +155,13 @@ describe('SearchModal', () => {
   })
 
   it('does not show no-results while content still running', async () => {
-    let finishContent!: () => void
+    let finishContent!: (value: { hits: []; truncated: boolean }) => void
     const remote = mockRemote({
       searchFiles: vi.fn().mockResolvedValue({ hits: [], truncated: false }),
       searchSymbols: vi.fn().mockResolvedValue({ hits: [], truncated: false }),
-      searchContent: vi.fn().mockImplementation(async function* () {
-        yield { type: 'progress', matched: 0 }
-        await new Promise<void>((r) => { finishContent = r })
-        yield { type: 'result', hits: [], truncated: false }
-      }),
+      searchContent: vi.fn().mockImplementation(() => new Promise((resolve) => {
+        finishContent = resolve
+      })),
     })
     render(
       <SearchModal
@@ -197,21 +178,20 @@ describe('SearchModal', () => {
     await userEvent.type(screen.getByRole('textbox'), 'zzz')
     await waitFor(() => expect(screen.getByText(/Searching/)).toBeTruthy())
     expect(screen.queryByText(en.noResults)).toBeNull()
-    finishContent()
+    finishContent({ hits: [], truncated: false })
     await waitFor(() => expect(screen.getByText(en.noResults)).toBeTruthy())
   })
 
   it('shows symbols section before content result frame', async () => {
-    let finishContent!: () => void
+    let finishContent!: (value: { hits: []; truncated: boolean }) => void
     const remote = mockRemote({
       searchSymbols: vi.fn().mockResolvedValue({
         hits: [{ path: 'sym.ts', name: 'Bar', kind: 'function', line: 2 }],
         truncated: false,
       }),
-      searchContent: vi.fn().mockImplementation(async function* () {
-        await new Promise<void>((r) => { finishContent = r })
-        yield { type: 'result', hits: [], truncated: false }
-      }),
+      searchContent: vi.fn().mockImplementation(() => new Promise((resolve) => {
+        finishContent = resolve
+      })),
     })
     render(
       <SearchModal
@@ -228,6 +208,6 @@ describe('SearchModal', () => {
     await userEvent.type(screen.getByRole('textbox'), 'Bar')
     await waitFor(() => expect(screen.getByText(/Bar · sym\.ts:2/)).toBeTruthy())
     expect(screen.queryByText(en.noResults)).toBeNull()
-    finishContent()
+    finishContent({ hits: [], truncated: false })
   })
 })

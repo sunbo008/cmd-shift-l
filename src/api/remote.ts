@@ -4,7 +4,7 @@
  */
 import type { TypertRemoteContribution } from '@deepseek-ai/dsh-typert-protocol'
 import {
-  contentFrameSchema,
+  contentLegResultSchema,
   fileLegResultSchema,
   legRequestSchema,
   scopeLookup,
@@ -101,14 +101,13 @@ export const TYPERT_REMOTE: TypertRemoteContribution = {
       service: 'workspaceCodeSearchController',
       namespace: 'workspaceCodeSearch',
       method: 'searchContent',
-      mode: 'stream',
       invocation: { kind: 'direct' },
       parameters: [scopeLookup, legRequestParam],
       cancellation: { parameter: 'signal' },
       result: {
         mode: 'strict',
-        typeSymbol: '@dsh-plugin/cmd-shift-l#ContentSearchFrame',
-        create: contentFrameSchema,
+        typeSymbol: '@dsh-plugin/cmd-shift-l#ContentLegResult',
+        create: contentLegResultSchema,
       },
     },
   ],

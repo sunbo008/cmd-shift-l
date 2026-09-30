@@ -8,7 +8,7 @@
 import { Context } from '@deepseek-ai/cordis';
 import Schema from '@deepseek-ai/schemastery';
 import { TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';
-import type { CodegraphStatus, ContentSearchFrame, FileLegResult, SearchResult, SymbolLegResult } from '../service/types.ts';
+import type { CodegraphStatus, ContentLegResult, FileLegResult, SearchResult, SymbolLegResult } from '../service/types.ts';
 import { type RemoteLegRequest, type RemoteSearchRequest, type WorkspaceSearchScope } from './types.ts';
 export type { RemoteLegRequest, RemoteSearchRequest, WorkspaceSearchScope } from './types.ts';
 export type { WorkspaceCodeSearchRemote } from './client.ts';
@@ -57,11 +57,11 @@ export default class WorkspaceCodeSearchController extends TypertRemoteService {
      */
     searchSymbols(workspaceFileScope: WorkspaceSearchScope, request: RemoteLegRequest, signal: AbortSignal): Promise<SymbolLegResult>;
     /**
-     * Stream content progress then a final result frame.
+     * Content leg (unary). Progress frames are Host-local; UI waits for the final result.
      * @param workspaceFileScope - Session workspace scope
      * @param request - query without root
      * @param signal - cancellation
      */
-    searchContent(workspaceFileScope: WorkspaceSearchScope, request: RemoteLegRequest, signal: AbortSignal): AsyncIterable<ContentSearchFrame>;
+    searchContent(workspaceFileScope: WorkspaceSearchScope, request: RemoteLegRequest, signal: AbortSignal): Promise<ContentLegResult>;
 }
 //# sourceMappingURL=index.d.ts.map

@@ -9,7 +9,7 @@ import workspaceCodeSearchRemote from '../api/remote.ts'
 import type { WorkspaceCodeSearchRemote } from '../api/client.ts'
 import type {
   CodegraphStatus,
-  ContentSearchFrame,
+  ContentLegResult,
   FileLegResult,
   SearchResult,
   SymbolLegResult,
@@ -235,14 +235,14 @@ function adaptRemote(ns: WireWorkspaceCodeSearch): WorkspaceCodeSearchRemote {
       if (!result.ok) throw result.error
       return result.value
     },
-    searchContent(
+    async searchContent(
       scope: WorkspaceSearchScope,
       request: RemoteLegRequest,
       signal: AbortSignal,
-    ): AsyncIterable<ContentSearchFrame> {
-      const handle = ns.searchContent(scope.sessionId, request, signal)
-      signal.addEventListener('abort', () => { handle.dispose() }, { once: true })
-      return handle
+    ): Promise<ContentLegResult> {
+      const result = await ns.searchContent(scope.sessionId, request, signal)
+      if (!result.ok) throw result.error
+      return result.value
     },
   }
 }
@@ -269,12 +269,7 @@ interface WireWorkspaceCodeSearch {
     sessionId: string,
     request: RemoteLegRequest,
     signal: AbortSignal,
-  ): RemoteStreamHandle<ContentSearchFrame>
-}
-
-/** Minimal stream handle shape from Typert Client mount. */
-interface RemoteStreamHandle<T> extends AsyncIterable<T> {
-  dispose(): void
+  ): Promise<RemoteOk<ContentLegResult>>
 }
 
 type RemoteOk<T> =

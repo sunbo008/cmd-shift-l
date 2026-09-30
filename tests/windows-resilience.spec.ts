@@ -58,9 +58,7 @@ describe('SearchRequestController client timeout', () => {
       search: vi.fn(),
       searchFiles: vi.fn().mockResolvedValue({ hits: [], truncated: false }),
       searchSymbols: vi.fn().mockResolvedValue({ hits: [], truncated: false }),
-      searchContent: vi.fn(async function* () {
-        await new Promise(() => { /* hang */ })
-      }),
+      searchContent: vi.fn(() => new Promise(() => { /* hang */ })),
     } as unknown as WorkspaceCodeSearchRemote
     const states: boolean[] = []
     const errors: Array<string | undefined> = []

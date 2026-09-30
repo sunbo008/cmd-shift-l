@@ -11,7 +11,7 @@ import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import type {} from '../service/index.ts'
 import type {
   CodegraphStatus,
-  ContentSearchFrame,
+  ContentLegResult,
   FileLegResult,
   SearchResult,
   SymbolLegResult,
@@ -151,24 +151,30 @@ export default class WorkspaceCodeSearchController extends TypertRemoteService {
   }
 
   /**
-   * Stream content progress then a final result frame.
+   * Content leg (unary). Progress frames are Host-local; UI waits for the final result.
    * @param workspaceFileScope - Session workspace scope
    * @param request - query without root
    * @param signal - cancellation
    */
-  @Remote({ mode: 'stream' })
-  searchContent(
+  @Remote
+  async searchContent(
     workspaceFileScope: WorkspaceSearchScope,
     request: RemoteLegRequest,
     signal: AbortSignal,
-  ): AsyncIterable<ContentSearchFrame> {
+  ): Promise<ContentLegResult> {
     signal.throwIfAborted()
-    const root = requireWorkspaceRoot(workspaceFileScope)
-    return this.ctx.workspaceCodeSearch.searchContentStream({
-      root,
-      query: request.query,
-      ...request.limitPerKind === undefined ? {} : { limitPerKind: request.limitPerKind },
-      signal,
-    })
+    try {
+      const root = requireWorkspaceRoot(workspaceFileScope)
+      return await this.ctx.workspaceCodeSearch.searchContent({
+        root,
+        query: request.query,
+        ...request.limitPerKind === undefined ? {} : { limitPerKind: request.limitPerKind },
+        signal,
+      })
+    } catch (error) {
+      signal.throwIfAborted()
+      const reason = error instanceof Error ? error.message : String(error)
+      throw new Error(`workspace-code-search/search-content-failed: ${reason}`, { cause: error })
+    }
   }
 }

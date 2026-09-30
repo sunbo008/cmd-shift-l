@@ -3,7 +3,7 @@
  */
 import type {
   CodegraphStatus,
-  ContentSearchFrame,
+  ContentLegResult,
   FileLegResult,
   SearchResult,
   SymbolLegResult,
@@ -48,7 +48,7 @@ export interface WorkspaceCodeSearchRemote {
     signal: AbortSignal,
   ): Promise<SymbolLegResult>
   /**
-   * Streaming content leg: progress frames then a result frame.
+   * Content leg (unary Promise — stream Remote broke Client `$mount` / inject).
    * @param scope - Session workspace scope
    * @param request - query without kinds
    * @param signal - cancellation
@@ -57,7 +57,7 @@ export interface WorkspaceCodeSearchRemote {
     scope: WorkspaceSearchScope,
     request: RemoteLegRequest,
     signal: AbortSignal,
-  ): AsyncIterable<ContentSearchFrame>
+  ): Promise<ContentLegResult>
 }
 
 export type { RemoteLegRequest, RemoteSearchRequest, WorkspaceSearchScope } from './types.ts'

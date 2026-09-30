@@ -60,7 +60,19 @@ export const symbolLegResultSchema = (): ZodType =>
     error: z.optional(z.string()),
   }))
 
-/** One streaming content-search frame. */
+/** Content-leg unary result. */
+export const contentLegResultSchema = (): ZodType =>
+  asZodType(z.object({
+    hits: z.array(z.object({
+      path: z.string(),
+      line: z.number(),
+      preview: z.string(),
+    })),
+    truncated: z.boolean(),
+    error: z.optional(z.string()),
+  }))
+
+/** One streaming content-search frame (Host-local / future use). */
 export const contentFrameSchema = (): ZodType =>
   asZodType(z.union([
     z.object({

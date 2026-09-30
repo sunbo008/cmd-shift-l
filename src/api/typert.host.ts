@@ -4,7 +4,7 @@
  * workspace-files' `workspaceFileScope` lookup (wire = SessionId).
  */
 import {
-  contentFrameSchema,
+  contentLegResultSchema,
   fileLegResultSchema,
   legRequestSchema,
   scopeLookup,
@@ -103,14 +103,13 @@ export const TYPERT = {
       service: 'workspaceCodeSearchController',
       namespace: 'workspaceCodeSearch',
       method: 'searchContent',
-      mode: 'stream' as const,
       invocation: { kind: 'direct' as const },
       parameters: [scopeLookup, legRequestParam],
       cancellation: { parameter: 'signal' as const },
       result: {
         mode: 'strict' as const,
-        typeSymbol: '@dsh-plugin/cmd-shift-l#ContentSearchFrame',
-        create: contentFrameSchema,
+        typeSymbol: '@dsh-plugin/cmd-shift-l#ContentLegResult',
+        create: contentLegResultSchema,
       },
     },
   ],
@@ -144,8 +143,7 @@ export const TYPERT = {
           {
             kind: 'method',
             name: 'searchContent',
-            signature:
-              '@Remote({ mode: "stream" }) searchContent(workspaceFileScope, request, signal): AsyncIterable<ContentSearchFrame>',
+            signature: '@Remote searchContent(workspaceFileScope, request, signal): ContentLegResult',
           },
         ],
         types: [],
