@@ -23,7 +23,16 @@ dsh plugin --profile web add 'github:sunbo008/cmd-shift-l#<commit-sha>'
 dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
 ```
 
-装完后**重启** `dsh web`（仅刷新浏览器不够）。若 pnpm 拦截构建脚本，按提示把包名写入 profile 的 `pnpm-workspace.yaml`（`allowBuilds`）后重跑 `add`。
+装完后**重启** `dsh web`（仅刷新浏览器不够）。
+
+git 安装会跑 `prepare` 构建。若 pnpm 拦截构建脚本，把输出里的包名（整段 key）加进 profile 的 `pnpm-workspace.yaml`：
+
+```yaml
+allowBuilds:
+  "@dsh-plugin/cmd-shift-l@https://codeload.github.com/sunbo008/cmd-shift-l/tar.gz/<commit>": true
+```
+
+然后重跑上面的 `add`。
 
 本机调试：`pnpm install && pnpm build` →  
 `dsh plugin --profile web add /绝对路径/cmd-shift-l`。
