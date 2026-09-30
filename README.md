@@ -11,11 +11,11 @@ dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
 dsh plugin --profile web add "github:sunbo008/cmd-shift-l#main"
 ```
 
-装完后**完全退出再开** `dsh web`。lock 版本须为 **`0.1.14-lazy-sqlite`**。
+装完后**完全退出再开** `dsh web`。lock 版本须为 **`0.1.15-no-mutobs`**。
 
 Chrome 请用终端打印的完整 `?token=` URL。
 
-> **`0.1.14-lazy-sqlite`：** 在可用的 `e3e6a8f` 基础上，Host 启动不再静态加载 `node:sqlite`；`status` 只做文件探测，SQLite 仅在搜索 Worker 里打开。未改 Dock 挂载（`971172e` 那套曾卡界面）。
+> **`0.1.15`：** 保留 lazy SQLite；去掉 Dock 对 `document` 的 `MutationObserver`（Files 树刷新会饿死 React，卡在「正在读取…」），改为 1s/5s 轮询。
 
 ## UI 入口
 
