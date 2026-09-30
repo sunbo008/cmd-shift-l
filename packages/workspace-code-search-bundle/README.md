@@ -18,17 +18,19 @@
 
 ## 安装
 
-在已安装 dsh 的环境中，把本 Bundle 加进某个 profile（路径按本机仓库调整）：
+在已安装 dsh 的环境中，从 GitHub 装进目标 profile（示例用 `<name>`，常见为 `web`）：
 
 ```bash
-dsh plugin --profile <name> add /Users/zhifengleng/workspace/github/cmd-shift-l/packages/workspace-code-search-bundle
+dsh plugin --profile <name> add github:sunbo008/cmd-shift-l#path:packages/workspace-code-search-bundle
 ```
 
-或使用 workspace / npm 协议发布后的包名：
+或：
 
 ```bash
-dsh plugin --profile <name> add @dsh-plugin/workspace-code-search-bundle
+dsh plugin --profile <name> add 'https://github.com/sunbo008/cmd-shift-l.git#path:packages/workspace-code-search-bundle'
 ```
+
+git 安装拉的是源码；若 pnpm 要求 `allowBuilds`，按 dsh 提示写入 profile 后再重跑 `add`。仅允许信任的包，需要时钉 commit。
 
 启动：
 
