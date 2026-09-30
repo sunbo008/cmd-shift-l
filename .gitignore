@@ -1,5 +1,6 @@
 packages/*/tests/fixtures/
 node_modules/
+lib/
 packages/*/lib/
 packages/*/node_modules/
 *.tsbuildinfo

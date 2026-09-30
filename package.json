@@ -1,20 +1,65 @@
 {
-  "name": "dsh-plugin",
-  "private": true,
+  "name": "@dsh-plugin/cmd-shift-l",
+  "version": "0.1.0",
+  "description": "External dsh bundle: workspace code search (Cmd/Ctrl+Shift+L / Shift+F)",
+  "icon": "./icon.svg",
   "type": "module",
   "packageManager": "pnpm@10.14.0",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "icon.svg",
+    "locale/*.json",
+    "cordis.patch.yml",
+    "lib/index.js",
+    "lib/types/**/*.d.ts",
+    "README.md"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
-    "node": "^22.19.0 || >=24.0.0"
+    "node": "^22.19.0 || >=24.0.0",
+    "dsh": ">=0.1.0-rc.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
   },
   "scripts": {
+    "build": "pnpm -r run build && tsc -p tsconfig.json",
+    "typecheck": "pnpm -r run typecheck && tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "typecheck": "tsc -b",
-    "build": "pnpm -r run build",
-    "publish:dry-run": "pnpm build && pnpm -r publish --access public --dry-run --no-git-checks",
-    "publish:packages": "pnpm build && pnpm -r publish --access public --no-git-checks"
+    "prepare": "pnpm run build",
+    "publish:dry-run": "pnpm build && pnpm -r publish --access public --dry-run --no-git-checks && pnpm publish --access public --dry-run --no-git-checks",
+    "publish:packages": "pnpm build && pnpm -r publish --access public --no-git-checks && pnpm publish --access public --no-git-checks"
+  },
+  "dependencies": {
+    "@dsh-plugin/api-workspace-code-search": "workspace:*",
+    "@dsh-plugin/client-ui-workspace-code-search": "workspace:*",
+    "@dsh-plugin/workspace-code-search": "workspace:*",
+    "@dsh-plugin/workspace-code-search-codegraph": "workspace:*",
+    "@dsh-plugin/workspace-code-search-content": "workspace:*"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.4"
   },
   "devDependencies": {
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
+    "js-yaml": "^4.1.0",
     "typescript": "^5.9.0",
     "vitest": "^3.2.0"
   }

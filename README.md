@@ -1,6 +1,6 @@
 # cmd-shift-l
 
-外部可安装的 DeepSeek Harness（dsh）插件仓库。
+外部可安装的 DeepSeek Harness（dsh）插件仓库。入口 Bundle 在**仓库根目录**（`package.json` 含 `dsh.bundle`）。
 
 ## 约定
 
@@ -12,34 +12,31 @@
 
 - [工作区代码搜索设计](docs/specs/2026-09-29-workspace-code-search-design.md)
 - [工作区代码搜索实现计划](docs/plans/2026-09-30-workspace-code-search.md)
+- [Bundle 排障与兼容矩阵](docs/bundle.md)
 
-## Bundle
-
-排障与兼容矩阵见 [`@dsh-plugin/cmd-shift-l`](packages/cmd-shift-l/README.md)。
-
-### 安装（推荐：GitHub）
+## 安装（推荐：GitHub）
 
 不经过 npm，直接从本仓库装进 profile（示例用 `web`）：
 
 ```bash
-dsh plugin --profile web add 'github:sunbo008/cmd-shift-l#path:packages/cmd-shift-l'
+dsh plugin --profile web add github:sunbo008/cmd-shift-l
 ```
 
-指定分支（把 `main` 换成你的分支名）：
+指定分支：
 
 ```bash
-dsh plugin --profile web add 'github:sunbo008/cmd-shift-l#main&path:packages/cmd-shift-l'
+dsh plugin --profile web add 'github:sunbo008/cmd-shift-l#main'
 ```
 
 钉死某次提交（更安全）：
 
 ```bash
-dsh plugin --profile web add 'github:sunbo008/cmd-shift-l#<commit-sha>&path:packages/cmd-shift-l'
+dsh plugin --profile web add 'github:sunbo008/cmd-shift-l#<commit-sha>'
 ```
 
 说明：
 
-- 必须带 `#path:packages/cmd-shift-l`：入口 Bundle 在 monorepo 子目录，不能只写仓库名。
+- 入口 Bundle 在仓库根，**不需要** `#path:…`。
 - shell 里有 `&` 时请给整个参数加引号。
 - git 安装拉的是**源码**。若 pnpm 提示拒绝运行构建脚本，按 dsh / pnpm 输出把包名写进该 profile 的 `pnpm-workspace.yaml`（`allowBuilds`），再重跑上面的 `add`。
 - 改完代码需重新 `add`（或升版本 / 换 commit）并**重启** `dsh web`；只刷新浏览器不够。
@@ -61,7 +58,7 @@ dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
 （卸载时仍用 `package.json` 里的包名 `@dsh-plugin/cmd-shift-l`。）
 
 开发者本机调试也可：clone 本仓库 → `pnpm install && pnpm build` →  
-`dsh plugin --profile web add /绝对路径/cmd-shift-l/packages/cmd-shift-l`。
+`dsh plugin --profile web add /绝对路径/cmd-shift-l`。
 
 ### UI 入口（仅此两处）
 
