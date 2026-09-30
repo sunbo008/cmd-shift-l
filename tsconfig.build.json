@@ -2,10 +2,12 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
+    "outDir": "lib",
+    "declarationDir": "lib/types",
     "jsx": "react-jsx",
     "lib": ["ES2024", "DOM"],
-    "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "tests/**/*.tsx"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["src/client/**"]
 }

@@ -1,9 +1,8 @@
 packages/*/tests/fixtures/
 node_modules/
 lib/
-packages/*/lib/
-packages/*/node_modules/
 *.tsbuildinfo
 .DS_Store
 .codegraph/
 *.log
+*.tgz

@@ -4,53 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  '@dsh-plugin/workspace-code-search': workspace:*
-  '@dsh-plugin/workspace-code-search-codegraph': workspace:*
-  '@dsh-plugin/workspace-code-search-content': workspace:*
-  '@dsh-plugin/api-workspace-code-search': workspace:*
-  '@dsh-plugin/client-ui-workspace-code-search': workspace:*
-
 importers:
 
   .:
-    dependencies:
-      '@dsh-plugin/api-workspace-code-search':
-        specifier: workspace:*
-        version: link:packages/api-workspace-code-search
-      '@dsh-plugin/client-ui-workspace-code-search':
-        specifier: workspace:*
-        version: link:packages/client-ui-workspace-code-search
-      '@dsh-plugin/workspace-code-search':
-        specifier: workspace:*
-        version: link:packages/workspace-code-search
-      '@dsh-plugin/workspace-code-search-codegraph':
-        specifier: workspace:*
-        version: link:packages/workspace-code-search-codegraph
-      '@dsh-plugin/workspace-code-search-content':
-        specifier: workspace:*
-        version: link:packages/workspace-code-search-content
-    devDependencies:
-      '@deepseek-ai/cordis':
-        specifier: ~4.0.4
-        version: 4.0.4
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
-      '@types/node':
-        specifier: ^22.0.0
-        version: 22.20.4
-      js-yaml:
-        specifier: ^4.1.0
-        version: 4.3.2
-      typescript:
-        specifier: ^5.9.0
-        version: 5.9.3
-      vitest:
-        specifier: ^3.2.0
-        version: 3.2.7(@types/node@22.20.4)(jsdom@26.1.0)
-
-  packages/api-workspace-code-search:
     dependencies:
       zod:
         specifier: ^4.4.3
@@ -65,33 +21,18 @@ importers:
       '@deepseek-ai/schemastery':
         specifier: ~3.18.4
         version: 3.18.4
-      '@dsh-plugin/workspace-code-search':
-        specifier: workspace:*
-        version: link:../workspace-code-search
-      typescript:
-        specifier: ^5.9.0
-        version: 5.9.3
-
-  packages/client-ui-workspace-code-search:
-    devDependencies:
-      '@deepseek-ai/cordis':
-        specifier: ~4.0.4
-        version: 4.0.4
-      '@deepseek-ai/schemastery':
-        specifier: ~3.18.4
-        version: 3.18.4
-      '@dsh-plugin/api-workspace-code-search':
-        specifier: workspace:*
-        version: link:../api-workspace-code-search
-      '@dsh-plugin/workspace-code-search':
-        specifier: workspace:*
-        version: link:../workspace-code-search
       '@testing-library/react':
         specifier: ^16.1.0
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@testing-library/user-event':
         specifier: ^14.5.0
         version: 14.6.7(@testing-library/dom@10.4.2)
+      '@types/js-yaml':
+        specifier: ^4.0.9
+        version: 4.0.9
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.4
       '@types/react':
         specifier: ^18.3.1
         version: 18.3.31
@@ -101,6 +42,9 @@ importers:
       esbuild:
         specifier: ^0.25.0
         version: 0.25.12
+      js-yaml:
+        specifier: ^4.1.0
+        version: 4.3.2
       jsdom:
         specifier: ^26.0.0
         version: 26.1.0
@@ -113,42 +57,9 @@ importers:
       typescript:
         specifier: ^5.9.0
         version: 5.9.3
-
-  packages/workspace-code-search:
-    devDependencies:
-      '@deepseek-ai/cordis':
-        specifier: ~4.0.4
-        version: 4.0.4
-      '@deepseek-ai/schemastery':
-        specifier: ~3.18.4
-        version: 3.18.4
-      typescript:
-        specifier: ^5.9.0
-        version: 5.9.3
-
-  packages/workspace-code-search-codegraph:
-    devDependencies:
-      '@deepseek-ai/cordis':
-        specifier: ~4.0.4
-        version: 4.0.4
-      '@dsh-plugin/workspace-code-search':
-        specifier: workspace:*
-        version: link:../workspace-code-search
-      typescript:
-        specifier: ^5.9.0
-        version: 5.9.3
-
-  packages/workspace-code-search-content:
-    devDependencies:
-      '@deepseek-ai/cordis':
-        specifier: ~4.0.4
-        version: 4.0.4
-      '@dsh-plugin/workspace-code-search':
-        specifier: workspace:*
-        version: link:../workspace-code-search
-      typescript:
-        specifier: ^5.9.0
-        version: 5.9.3
+      vitest:
+        specifier: ^3.2.0
+        version: 3.2.7(@types/node@22.20.4)(jsdom@26.1.0)
 
 packages:
 

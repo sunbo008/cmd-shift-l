@@ -4,7 +4,13 @@
   "description": "External dsh bundle: workspace code search (Cmd/Ctrl+Shift+L / Shift+F)",
   "icon": "./icon.svg",
   "type": "module",
-  "packageManager": "pnpm@10.14.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sunbo008/cmd-shift-l"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
   "exports": {
@@ -12,22 +18,25 @@
       "types": "./lib/types/index.d.ts",
       "default": "./lib/index.js"
     },
+    "./client": {
+      "default": "./lib/client.js"
+    },
     "./cordis.patch.yml": "./cordis.patch.yml",
     "./locale/*.json": "./locale/*.json",
     "./package.json": "./package.json"
   },
   "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "lib/client.js.map",
+    "lib/types/**/*.d.ts",
+    "cordis.patch.yml",
     "icon.svg",
     "locale/*.json",
-    "cordis.patch.yml",
-    "lib/index.js",
-    "lib/types/**/*.d.ts",
     "README.md"
   ],
   "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
+  "packageManager": "pnpm@10.14.0",
   "engines": {
     "node": "^22.19.0 || >=24.0.0",
     "dsh": ">=0.1.0-rc.0"
@@ -35,31 +44,52 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
-    }
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-api-session-controller",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-shortcuts",
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ],
+      "platform": "web"
+    },
+    "manifestVersion": 1
   },
   "scripts": {
-    "build": "pnpm -r run build && tsc -p tsconfig.json",
-    "typecheck": "pnpm -r run typecheck && tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
+    "build": "pnpm run clean && tsc -p tsconfig.build.json && node ./scripts/build-client.mjs",
+    "clean": "node -e \"require('node:fs').rmSync('lib',{recursive:true,force:true})\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "prepare": "pnpm run build",
-    "publish:dry-run": "pnpm build && pnpm -r publish --access public --dry-run --no-git-checks && pnpm publish --access public --dry-run --no-git-checks",
-    "publish:packages": "pnpm build && pnpm -r publish --access public --no-git-checks && pnpm publish --access public --no-git-checks"
+    "test": "vitest run",
+    "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@dsh-plugin/api-workspace-code-search": "github:sunbo008/cmd-shift-l#path:packages/api-workspace-code-search",
-    "@dsh-plugin/client-ui-workspace-code-search": "github:sunbo008/cmd-shift-l#path:packages/client-ui-workspace-code-search",
-    "@dsh-plugin/workspace-code-search": "github:sunbo008/cmd-shift-l#path:packages/workspace-code-search",
-    "@dsh-plugin/workspace-code-search-codegraph": "github:sunbo008/cmd-shift-l#path:packages/workspace-code-search-codegraph",
-    "@dsh-plugin/workspace-code-search-content": "github:sunbo008/cmd-shift-l#path:packages/workspace-code-search-content"
+    "zod": "^4.4.3"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "~4.0.4"
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/dsh-typert-protocol": "~0.2.0-rc.2",
+    "@deepseek-ai/schemastery": "~3.18.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/dsh-typert-protocol": "~0.2.0-rc.2",
+    "@deepseek-ai/schemastery": "~3.18.4",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.0",
+    "esbuild": "^0.25.0",
     "js-yaml": "^4.1.0",
+    "jsdom": "^26.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "typescript": "^5.9.0",
     "vitest": "^3.2.0"
   }
