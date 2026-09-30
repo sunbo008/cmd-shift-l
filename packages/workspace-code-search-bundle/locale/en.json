@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Workspace code search",
+    "description": "Open a unified modal to search files, symbols, and content (Desktop: Cmd/Ctrl+Shift+F; Web: Cmd/Ctrl+Shift+L)."
+  }
+}

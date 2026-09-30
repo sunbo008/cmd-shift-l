@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../deepseek-harness"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../github/cmd-shift-l"
+		}
+	],
+	"settings": {}
+}

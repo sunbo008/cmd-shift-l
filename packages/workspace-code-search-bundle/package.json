@@ -1,0 +1,56 @@
+{
+  "name": "@dsh-plugin/workspace-code-search-bundle",
+  "version": "0.1.0",
+  "description": "External dsh bundle: workspace file/symbol/content search modal",
+  "icon": "./icon.svg",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "icon.svg",
+    "locale/*.json",
+    "cordis.patch.yml",
+    "lib/index.js",
+    "lib/types/**/*.d.ts",
+    "README.md"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@dsh-plugin/api-workspace-code-search": "workspace:*",
+    "@dsh-plugin/client-ui-workspace-code-search": "workspace:*",
+    "@dsh-plugin/workspace-code-search": "workspace:*",
+    "@dsh-plugin/workspace-code-search-codegraph": "workspace:*",
+    "@dsh-plugin/workspace-code-search-content": "workspace:*"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.4"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@types/js-yaml": "^4.0.9",
+    "js-yaml": "^4.1.0",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0",
+    "dsh": ">=0.1.0-rc.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

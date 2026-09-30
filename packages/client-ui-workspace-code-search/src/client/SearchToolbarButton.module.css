@@ -1,0 +1,86 @@
+.button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  color: var(--dsw-alias-label-secondary, CanvasText);
+  line-height: 1;
+  background: transparent;
+  border: none;
+  border-radius: var(--dsw-radius-sm, 4px);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.button svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1;
+}
+
+.button:hover {
+  color: var(--dsw-alias-label-primary, CanvasText);
+  background: var(--dsw-alias-interactive-bg-hover, color-mix(in srgb, CanvasText 12%, transparent));
+}
+
+.button:active {
+  color: var(--dsw-alias-label-primary, CanvasText);
+  background: var(--dsw-alias-interactive-bg-pressed, color-mix(in srgb, CanvasText 18%, transparent));
+}
+
+.button:focus-visible {
+  outline: 1px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary, Highlight));
+  outline-offset: 2px;
+}
+
+.tip {
+  position: fixed;
+  z-index: 10000;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  color: var(--dsw-alias-label-primary, CanvasText);
+  font: var(--dsw-font-caption, 12px/1.2 system-ui, sans-serif);
+  white-space: nowrap;
+  pointer-events: none;
+  background: var(--dsw-alias-bg-elevated, Canvas);
+  border: 1px solid var(--dsw-alias-border-subtle, color-mix(in srgb, CanvasText 16%, transparent));
+  border-radius: var(--dsw-radius-sm, 4px);
+  box-shadow: 0 4px 16px color-mix(in srgb, CanvasText 12%, transparent);
+  transform: translateX(-50%);
+}
+
+.tipLabel {
+  opacity: 0.85;
+}
+
+.tipKeys {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.tipKey {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2em;
+  padding: 1px 4px;
+  font: inherit;
+  font-weight: 500;
+  line-height: 1.2;
+  background: var(--dsw-alias-interactive-bg-hover, color-mix(in srgb, CanvasText 8%, transparent));
+  border-radius: 3px;
+}
+
+.tipSep {
+  display: inline-flex;
+  padding: 0 1px;
+  font: inherit;
+  opacity: 0.55;
+  background: transparent;
+}

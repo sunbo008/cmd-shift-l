@@ -1,0 +1,18 @@
+- insert:
+    - id: workspace-code-search
+      name: '@dsh-plugin/workspace-code-search'
+      config:
+        maxQueryCodeUnits: 500
+        limitPerKind: 50
+        debounceMs: 250
+        searchTimeoutMs: 10000
+    - id: workspace-code-search-codegraph
+      name: '@dsh-plugin/workspace-code-search-codegraph'
+    - id: workspace-code-search-content
+      name: '@dsh-plugin/workspace-code-search-content'
+    - id: api-workspace-code-search
+      name: '@dsh-plugin/api-workspace-code-search'
+    - id: client-ui-workspace-code-search
+      name: '@dsh-plugin/client-ui-workspace-code-search'
+      config:
+        debounceMs: 250

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "工作区代码搜索",
+    "description": "用快捷键打开统一弹窗，搜索工作区文件、符号与内容（Desktop：Cmd/Ctrl+Shift+F；Web：Cmd/Ctrl+Shift+L）。"
+  }
+}

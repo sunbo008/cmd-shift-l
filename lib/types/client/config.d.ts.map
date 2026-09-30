@@ -1,0 +1,1 @@
+{"version":3,"file":"config.d.ts","sourceRoot":"","sources":["../../../packages/client-ui-workspace-code-search/src/client/config.ts"],"names":[],"mappings":"AAAA,OAAO,MAAM,MAAM,0BAA0B,CAAA;AAE7C,mEAAmE;AACnE,MAAM,WAAW,MAAM;IACrB,8DAA8D;IAC9D,UAAU,CAAC,EAAE,MAAM,CAAA;CACpB;AAED,uDAAuD;AACvD,eAAO,MAAM,MAAM,EAAE,MAAM,CAAC,MAAM,CAEhC,CAAA"}
