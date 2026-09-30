@@ -53,8 +53,7 @@ export class SearchRequestController {
   dispose(): void {
     if (this.debounceTimer !== undefined) clearTimeout(this.debounceTimer)
     this.debounceTimer = undefined
-    if (this.clientTimeoutTimer !== undefined) clearTimeout(this.clientTimeoutTimer)
-    this.clientTimeoutTimer = undefined
+    this.clearClientTimeout()
     this.controller?.abort()
     this.controller = undefined
   }
@@ -70,8 +69,7 @@ export class SearchRequestController {
     if (shouldSkipSearch(query, kinds)) {
       this.controller?.abort()
       this.controller = undefined
-      if (this.clientTimeoutTimer !== undefined) clearTimeout(this.clientTimeoutTimer)
-      this.clientTimeoutTimer = undefined
+      this.clearClientTimeout()
       this.onResult(undefined, false)
       this.onError(undefined)
       return
@@ -85,25 +83,28 @@ export class SearchRequestController {
 
   private async run(query: string, kinds: readonly SearchKind[]): Promise<void> {
     this.controller?.abort()
-    if (this.clientTimeoutTimer !== undefined) clearTimeout(this.clientTimeoutTimer)
+    this.clearClientTimeout()
     const controller = new AbortController()
     this.controller = controller
     const seq = ++this.issuedSeq
-    let timedOut = false
     this.onResult(undefined, true)
     this.onError(undefined)
     const timeoutMs = this.config.clientTimeoutMs ?? DEFAULT_CLIENT_TIMEOUT_MS
-    this.clientTimeoutTimer = setTimeout(() => {
-      this.clientTimeoutTimer = undefined
-      timedOut = true
-      controller.abort()
-    }, timeoutMs)
     try {
-      const result = await this.remote.search(
-        this.scope,
-        { query, kinds },
-        controller.signal,
-      )
+      const result = await new Promise<SearchResult>((resolve, reject) => {
+        this.clientTimeoutTimer = setTimeout(() => {
+          this.clientTimeoutTimer = undefined
+          controller.abort()
+          reject(Object.assign(
+            new Error(`Search timed out after ${String(timeoutMs)}ms`),
+            { name: 'TimeoutError' },
+          ))
+        }, timeoutMs)
+        void this.remote.search(this.scope, { query, kinds }, controller.signal).then(
+          (value) => { resolve(value) },
+          (error: unknown) => { reject(error) },
+        )
+      })
       this.clearClientTimeout()
       if (!this.accept(seq)) return
       this.onResult(result, false)
@@ -112,7 +113,6 @@ export class SearchRequestController {
       if (!this.accept(seq)) return
       if (error instanceof Error && error.name === 'AbortError') {
         this.onResult(undefined, false)
-        if (timedOut) this.onError(`Search timed out after ${String(timeoutMs)}ms`)
         return
       }
       this.onResult(undefined, false)

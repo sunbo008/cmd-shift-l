@@ -2,10 +2,18 @@
  * Run codegraph file/symbol search in a worker thread (DatabaseSync is sync).
  */
 import { Worker } from 'node:worker_threads'
+import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import type { FileHit, ProviderSearchRequest, SymbolHit } from '../service/types.ts'
 
-const workerUrl = new URL('./codegraph-worker.js', import.meta.url)
+function resolveWorkerUrl(): URL {
+  const beside = new URL('./codegraph-worker.js', import.meta.url)
+  if (existsSync(fileURLToPath(beside))) return beside
+  // Vitest runs TypeScript from src/; fall back to the built worker.
+  return new URL('../../lib/codegraph/codegraph-worker.js', import.meta.url)
+}
+
+const workerUrl = resolveWorkerUrl()
 
 interface WorkerOk {
   readonly ok: true
