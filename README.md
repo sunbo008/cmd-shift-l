@@ -27,23 +27,22 @@ dsh plugin --profile web add "github:sunbo008/cmd-shift-l#<commit-sha>"
 
 装完后**完全退出再开** `dsh web`（仅刷新浏览器不够）。若报 `EADDRINUSE:3080`，先结束占用该端口的旧进程，或 `dsh web --port 3081`。
 
-> **临时隔离（`0.1.1-inert`）：** 无 Client 导出、空 `cordis.patch.yml`、空 Host `apply`。装上后 Files 不应再停在「正在读取…」。若仍停住，lock 里版本应显示 `0.1.1-inert`；否则是旧包。
+> **临时（`0.1.2-host-lazy`）：** Host 延迟 3s 再动态加载搜索逻辑，避免堵死 Files；**Client / 放大镜仍关闭**。先确认右侧「文件」能列出；放大镜下一版再加回。
 
 本机调试：`pnpm install && pnpm build` →  
 `dsh plugin --profile web add /绝对路径/cmd-shift-l`。
 
 ### Windows 界面卡住 / 白屏
 
-当前常见两种表现：
-
 | 现象 | 含义 |
 |------|------|
-| 会话空白 / 输入框仍写「选择一个工作区开始」 | Client boot 被堵（旧版 `$mount`） |
-| 会话能开，但右侧「文件」一直「正在读取…」、底部「正在加载模型…」 | Host `workspaceFiles.list` 等 Remote 不返回（旧版 Host 仍在加载） |
+| 会话空白 / 「选择一个工作区开始」 | Client `$mount` 堵 boot（旧版） |
+| 会话正常，Files「正在读取…」，无查找放大镜 | Host 在启动时同步加载 `node:sqlite`/Remote，堵了 `workspaceFiles.list`；或仍是空包未装到 lazy Host |
+| 无放大镜 | 当前发布刻意未开 Client |
 
-1. 确认 lock：`%USERPROFILE%\.dsh\profiles\web\pnpm-lock.yaml` 搜 `cmd-shift-l`，应含 `0.1.1-inert` 或最新 `#main` commit。
-2. 看启动日志：`%USERPROFILE%\.dsh\logs\startup-*.log`。
-3. 仍异常：先 `remove` 再 `add "#main"`，完全退出后重开 `dsh web`。
+1. lock 搜 `cmd-shift-l`，版本应为 **`0.1.2-host-lazy`**。
+2. 启动日志：`%USERPROFILE%\.dsh\logs\startup-*.log`。
+3. 先卸再装 `#main`，完全退出后重开。
 
 ## UI 入口
 

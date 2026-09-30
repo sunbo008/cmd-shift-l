@@ -1,9 +1,9 @@
 /**
  * Host entry for @dsh-plugin/cmd-shift-l.
  *
- * TEMPORARY: apply is a no-op so Windows web can boot while we isolate the hang.
- * Search Host / Remote / providers are disabled until Sessions + Files stay responsive
- * with this package installed.
+ * Top-level imports stay light: never pull `node:sqlite`, Typert Remotes, or
+ * providers during module evaluation. Windows Host previously stalled
+ * `workspaceFiles.list` (Files「正在读取…」) when those loaded at plug-in boot.
  */
 import type { Context } from '@deepseek-ai/cordis'
 import { Config } from './config.ts'
@@ -26,11 +26,26 @@ export type {
 } from './service/types.ts'
 export { asAbsolutePath } from './service/types.ts'
 
+/** Delay Host search wiring so Files / model RPC can finish first on Windows. */
+const HOST_BOOT_DELAY_MS = 3_000
+
 /**
- * @param _ctx - Cordis host context (unused while inert)
- * @param _config - validated bundle config (unused while inert)
+ * @param ctx - Cordis host context
+ * @param config - validated bundle config
  */
-export function apply(_ctx: Context, _config: Config): void {
-  // Intentionally empty: previous Host wiring (service + Typert Remote) still
-  // coincided with Windows web UI stalls after Client was removed.
+export function apply(ctx: Context, config: Config): void {
+  ctx.effect(() => {
+    const timer = setTimeout(() => {
+      void import('./boot-host.ts')
+        .then((mod) => {
+          mod.bootHost(ctx, config)
+        })
+        .catch((error: unknown) => {
+          console.error('[cmd-shift-l] deferred Host boot failed', error)
+        })
+    }, HOST_BOOT_DELAY_MS)
+    return () => {
+      clearTimeout(timer)
+    }
+  }, 'cmd-shift-l: deferred host boot')
 }
