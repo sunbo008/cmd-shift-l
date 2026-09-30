@@ -28,6 +28,71 @@ export const searchRequestSchema = (): ZodType =>
     limitPerKind: z.optional(z.number()),
   }))
 
+/** Single-leg Remote request (no kinds, no root). */
+export const legRequestSchema = (): ZodType =>
+  asZodType(z.object({
+    query: z.string(),
+    limitPerKind: z.optional(z.number()),
+  }))
+
+/** File-leg result. */
+export const fileLegResultSchema = (): ZodType =>
+  asZodType(z.object({
+    hits: z.array(z.object({
+      path: z.string(),
+      score: z.optional(z.number()),
+    })),
+    truncated: z.boolean(),
+    error: z.optional(z.string()),
+  }))
+
+/** Symbol-leg result. */
+export const symbolLegResultSchema = (): ZodType =>
+  asZodType(z.object({
+    hits: z.array(z.object({
+      path: z.string(),
+      name: z.string(),
+      kind: z.string(),
+      line: z.optional(z.number()),
+      score: z.optional(z.number()),
+    })),
+    truncated: z.boolean(),
+    error: z.optional(z.string()),
+  }))
+
+/** Content-leg unary result. */
+export const contentLegResultSchema = (): ZodType =>
+  asZodType(z.object({
+    hits: z.array(z.object({
+      path: z.string(),
+      line: z.number(),
+      preview: z.string(),
+    })),
+    truncated: z.boolean(),
+    error: z.optional(z.string()),
+  }))
+
+/** One streaming content-search frame (Host-local / future use). */
+export const contentFrameSchema = (): ZodType =>
+  asZodType(z.union([
+    z.object({
+      type: z.literal('progress'),
+      matched: z.number(),
+      pathHint: z.optional(z.string()),
+      filesScanned: z.optional(z.number()),
+    }),
+    z.object({
+      type: z.literal('result'),
+      hits: z.array(z.object({
+        path: z.string(),
+        line: z.number(),
+        preview: z.string(),
+      })),
+      truncated: z.boolean(),
+      error: z.optional(z.string()),
+    }),
+  ]))
+
 /** Partitioned search result. */
 export const searchResultSchema = (): ZodType =>
   asZodType(z.object({

@@ -40,4 +40,26 @@ describe.skipIf(!hasRg)('content grep', () => {
     })
     expect(hits.every(h => !h.preview.includes('\0'))).toBe(true)
   })
+
+  it('emits onProgress before completing', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'wcs-'))
+    await writeFile(join(root, 'a.txt'), 'tokenA\n')
+    await writeFile(join(root, 'b.txt'), 'tokenA again\n')
+    const progress: Array<{ matched: number }> = []
+    const result = await runWorkspaceGrep(
+      {
+        root: asAbsolutePath(root),
+        query: 'tokenA',
+        limit: 10,
+        signal: AbortSignal.timeout(5000),
+      },
+      {
+        onProgress: (p) => { progress.push({ matched: p.matched }) },
+        progressIntervalMs: 1,
+      },
+    )
+    expect(result.hits.length).toBeGreaterThan(0)
+    expect(progress.length).toBeGreaterThan(0)
+    expect(progress.at(-1)!.matched).toBeGreaterThan(0)
+  })
 })

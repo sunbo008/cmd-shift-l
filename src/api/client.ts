@@ -11,6 +11,7 @@ export interface WorkspaceCodeSearchRemote {
    */
   status(scope: WorkspaceSearchScope): Promise<CodegraphStatus>
   /**
+   * Partitioned search. UI fans out parallel calls with a single kind each.
    * @param scope - Session workspace scope
    * @param request - query payload without root
    * @param signal - cancellation
@@ -22,4 +23,4 @@ export interface WorkspaceCodeSearchRemote {
   ): Promise<SearchResult>
 }
 
-export type { RemoteSearchRequest, WorkspaceSearchScope } from './types.ts'
+export type { RemoteLegRequest, RemoteSearchRequest, WorkspaceSearchScope } from './types.ts'

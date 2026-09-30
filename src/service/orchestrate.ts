@@ -2,13 +2,24 @@ import type {
   AbsolutePath,
   CodegraphStatus,
   ContentHit,
+  ContentLegResult,
   FileHit,
+  FileLegResult,
   SearchKind,
   SearchResult,
   SymbolHit,
+  SymbolLegResult,
   WorkspaceCodeSearchProvider,
 } from './types.ts'
 import type { Config } from './config.ts'
+
+/** Shared inputs for a single search leg (query already normalized). */
+export interface LegRequest {
+  readonly root: AbsolutePath
+  readonly query: string
+  readonly limit: number
+  readonly signal: AbortSignal
+}
 
 /** Normalize and validate a search query (session-search style). */
 export function normalizeQuery(value: string, maxQueryCodeUnits: number): string {
@@ -92,6 +103,160 @@ export async function resolveCodegraphStatus(
   return { codegraph: 'missing', message: 'No codegraph status provider registered' }
 }
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+/**
+ * Run the file search leg only.
+ * @param providers - registered providers
+ * @param config - plugin config
+ * @param request - normalized query + limit
+ */
+export async function runFileLeg(
+  providers: Iterable<WorkspaceCodeSearchProvider>,
+  config: Config,
+  request: LegRequest,
+): Promise<FileLegResult> {
+  request.signal.throwIfAborted()
+  const list = [...providers]
+  const status = await resolveCodegraphStatus(list, request.root)
+  const codegraphReady = status.codegraph === 'ready'
+  const fileProviders = list.filter(p => p.searchFiles !== undefined)
+
+  try {
+    return await withTimeout(async (signal) => {
+      if (!codegraphReady) {
+        const fsProvider = list.find(p => p.id === 'content' && p.searchFiles !== undefined)
+        if (fsProvider?.searchFiles === undefined) {
+          return { hits: [], truncated: false }
+        }
+        const result = await fsProvider.searchFiles({
+          root: request.root,
+          query: request.query,
+          limit: request.limit,
+          signal,
+        })
+        return {
+          hits: result.hits,
+          truncated: result.truncated,
+          ...result.error === undefined ? {} : { error: result.error },
+        }
+      }
+
+      if (fileProviders.length === 0) {
+        return { hits: [], truncated: false, error: 'No file search provider' }
+      }
+
+      const seen = new Set<string>()
+      const merged: FileHit[] = []
+      let anyTruncated = false
+      let providerError: string | undefined
+      for (const provider of fileProviders) {
+        const searchFiles = provider.searchFiles!.bind(provider)
+        const result = await searchFiles({
+          root: request.root,
+          query: request.query,
+          limit: request.limit,
+          signal,
+        })
+        if (result.truncated) anyTruncated = true
+        if (result.error !== undefined) providerError = result.error
+        for (const hit of result.hits) {
+          if (seen.has(hit.path)) continue
+          seen.add(hit.path)
+          merged.push(hit)
+        }
+      }
+      merged.sort((a, b) => (b.score ?? 0) - (a.score ?? 0) || a.path.localeCompare(b.path))
+      return {
+        hits: merged.slice(0, request.limit),
+        truncated: anyTruncated || merged.length > request.limit,
+        ...providerError === undefined ? {} : { error: providerError },
+      }
+    }, config.searchTimeoutMs, request.signal)
+  } catch (error) {
+    if (request.signal.aborted) throw error
+    return { hits: [], truncated: false, error: errorMessage(error) }
+  }
+}
+
+/**
+ * Run the symbol search leg only.
+ * @param providers - registered providers
+ * @param config - plugin config
+ * @param request - normalized query + limit
+ */
+export async function runSymbolLeg(
+  providers: Iterable<WorkspaceCodeSearchProvider>,
+  config: Config,
+  request: LegRequest,
+): Promise<SymbolLegResult> {
+  request.signal.throwIfAborted()
+  const list = [...providers]
+  const status = await resolveCodegraphStatus(list, request.root)
+  if (status.codegraph !== 'ready') {
+    return { hits: [], truncated: false }
+  }
+  const symbolsProvider = list.find(p => p.searchSymbols !== undefined)
+  if (symbolsProvider?.searchSymbols === undefined) {
+    return { hits: [], truncated: false, error: 'No symbol search provider' }
+  }
+  const searchSymbols = symbolsProvider.searchSymbols.bind(symbolsProvider)
+  try {
+    return await withTimeout(async (signal) => {
+      const result = await searchSymbols({
+        root: request.root,
+        query: request.query,
+        limit: request.limit,
+        signal,
+      })
+      return { hits: result.hits, truncated: result.truncated }
+    }, config.searchTimeoutMs, request.signal)
+  } catch (error) {
+    if (request.signal.aborted) throw error
+    return { hits: [], truncated: false, error: errorMessage(error) }
+  }
+}
+
+/**
+ * Run the content search leg only.
+ * @param providers - registered providers
+ * @param config - plugin config
+ * @param request - normalized query + limit
+ */
+export async function runContentLeg(
+  providers: Iterable<WorkspaceCodeSearchProvider>,
+  config: Config,
+  request: LegRequest,
+): Promise<ContentLegResult> {
+  request.signal.throwIfAborted()
+  const list = [...providers]
+  const contentProvider = list.find(p => p.searchContent !== undefined)
+  if (contentProvider?.searchContent === undefined) {
+    return { hits: [], truncated: false, error: 'No content search provider' }
+  }
+  const searchContent = contentProvider.searchContent.bind(contentProvider)
+  try {
+    return await withTimeout(async (signal) => {
+      const result = await searchContent({
+        root: request.root,
+        query: request.query,
+        limit: request.limit,
+        signal,
+      })
+      return {
+        hits: result.hits,
+        truncated: result.truncated,
+        ...result.error === undefined ? {} : { error: result.error },
+      }
+    }, config.searchTimeoutMs, request.signal)
+  } catch (error) {
+    if (request.signal.aborted) throw error
+    return { hits: [], truncated: false, error: errorMessage(error) }
+  }
+}
+
 /**
  * Orchestrate partitioned search across providers.
  * @param providers - registered providers
@@ -116,131 +281,43 @@ export async function orchestrateSearch(
 
   const limit = clampLimitPerKind(request.limitPerKind, config.limitPerKind)
   const list = [...providers]
-  const status = await resolveCodegraphStatus(list, request.root)
-  const codegraphReady = status.codegraph === 'ready'
-
-  const fileProviders = list.filter(p => p.searchFiles !== undefined)
-  const symbolsProvider = list.find(p => p.searchSymbols !== undefined)
-  const contentProvider = list.find(p => p.searchContent !== undefined)
-
-  let files: FileHit[] = []
-  let symbols: SymbolHit[] = []
-  let content: ContentHit[] = []
-  let truncated = false
-  const errors: NonNullable<SearchResult['errors']> = {}
-
-  const leg = async (
-    label: 'file' | 'symbol' | 'content' | 'codegraph',
-    run: (signal: AbortSignal) => Promise<void>,
-  ): Promise<void> => {
-    try {
-      await withTimeout(run, config.searchTimeoutMs, request.signal)
-    } catch (error) {
-      // Parent cancellation aborts the whole search; per-leg timeout stays isolated.
-      if (request.signal.aborted) throw error
-      if (label === 'codegraph') {
-        errors.codegraph = error instanceof Error ? error.message : String(error)
-      } else if (label === 'content') {
-        errors.content = error instanceof Error ? error.message : String(error)
-      } else {
-        errors[label] = error instanceof Error ? error.message : String(error)
-      }
-    }
+  const legRequest: LegRequest = {
+    root: request.root,
+    query,
+    limit,
+    signal: request.signal,
   }
 
   const tasks: Array<Promise<void>> = []
+  let files: readonly FileHit[] = []
+  let symbols: readonly SymbolHit[] = []
+  let content: readonly ContentHit[] = []
+  let truncated = false
+  const errors: NonNullable<SearchResult['errors']> = {}
 
-  if (kinds.has('file') || kinds.has('symbol')) {
-    if (!codegraphReady) {
-      // Index missing: still offer filesystem path search via the content provider.
-      if (kinds.has('file')) {
-        const fsProvider = list.find(p => p.id === 'content' && p.searchFiles !== undefined)
-        if (fsProvider?.searchFiles !== undefined) {
-          const searchFiles = fsProvider.searchFiles.bind(fsProvider)
-          tasks.push(leg('file', async (signal) => {
-            const result = await searchFiles({
-              root: request.root,
-              query,
-              limit,
-              signal,
-            })
-            files = result.hits
-            if (result.truncated) truncated = true
-            if (result.error !== undefined) errors.file = result.error
-          }))
-        }
-      }
-    } else {
-      // Merge every searchFiles provider (codegraph first, then rg --files fill-in
-      // for paths the index omits such as Markdown).
-      if (kinds.has('file') && fileProviders.length > 0) {
-        tasks.push(leg('file', async (signal) => {
-          const seen = new Set<string>()
-          const merged: FileHit[] = []
-          let anyTruncated = false
-          for (const provider of fileProviders) {
-            const searchFiles = provider.searchFiles!.bind(provider)
-            const result = await searchFiles({
-              root: request.root,
-              query,
-              limit,
-              signal,
-            })
-            if (result.truncated) anyTruncated = true
-            for (const hit of result.hits) {
-              if (seen.has(hit.path)) continue
-              seen.add(hit.path)
-              merged.push(hit)
-            }
-          }
-          merged.sort((a, b) => (b.score ?? 0) - (a.score ?? 0) || a.path.localeCompare(b.path))
-          files = merged.slice(0, limit)
-          if (anyTruncated || merged.length > limit) truncated = true
-        }))
-      }
-      if (kinds.has('symbol') && symbolsProvider?.searchSymbols) {
-        const searchSymbols = symbolsProvider.searchSymbols.bind(symbolsProvider)
-        tasks.push(leg('symbol', async (signal) => {
-          const result = await searchSymbols({
-            root: request.root,
-            query,
-            limit,
-            signal,
-          })
-          symbols = result.hits
-          if (result.truncated) truncated = true
-        }))
-      }
-      if (
-        (kinds.has('file') && fileProviders.length === 0)
-        || (kinds.has('symbol') && symbolsProvider === undefined)
-      ) {
-        // ready status but no provider methods — treat as codegraph error surface
-        if (kinds.has('file') && fileProviders.length === 0) errors.file = 'No file search provider'
-        if (kinds.has('symbol') && symbolsProvider === undefined) {
-          errors.symbol = 'No symbol search provider'
-        }
-      }
-    }
+  if (kinds.has('file')) {
+    tasks.push((async () => {
+      const result = await runFileLeg(list, config, legRequest)
+      files = result.hits
+      if (result.truncated) truncated = true
+      if (result.error !== undefined) errors.file = result.error
+    })())
   }
-
+  if (kinds.has('symbol')) {
+    tasks.push((async () => {
+      const result = await runSymbolLeg(list, config, legRequest)
+      symbols = result.hits
+      if (result.truncated) truncated = true
+      if (result.error !== undefined) errors.symbol = result.error
+    })())
+  }
   if (kinds.has('content')) {
-    if (contentProvider?.searchContent === undefined) {
-      errors.content = 'No content search provider'
-    } else {
-      const searchContent = contentProvider.searchContent.bind(contentProvider)
-      tasks.push(leg('content', async (signal) => {
-        const result = await searchContent({
-          root: request.root,
-          query,
-          limit,
-          signal,
-        })
-        content = result.hits
-        if (result.truncated) truncated = true
-        if (result.error !== undefined) errors.content = result.error
-      }))
-    }
+    tasks.push((async () => {
+      const result = await runContentLeg(list, config, legRequest)
+      content = result.hits
+      if (result.truncated) truncated = true
+      if (result.error !== undefined) errors.content = result.error
+    })())
   }
 
   await Promise.all(tasks)

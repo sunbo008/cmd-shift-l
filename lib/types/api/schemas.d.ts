@@ -8,6 +8,16 @@ export declare const sessionIdSchema: () => ZodType;
 export declare const statusResultSchema: () => ZodType;
 /** Client search request (no workspace root). */
 export declare const searchRequestSchema: () => ZodType;
+/** Single-leg Remote request (no kinds, no root). */
+export declare const legRequestSchema: () => ZodType;
+/** File-leg result. */
+export declare const fileLegResultSchema: () => ZodType;
+/** Symbol-leg result. */
+export declare const symbolLegResultSchema: () => ZodType;
+/** Content-leg unary result. */
+export declare const contentLegResultSchema: () => ZodType;
+/** One streaming content-search frame (Host-local / future use). */
+export declare const contentFrameSchema: () => ZodType;
 /** Partitioned search result. */
 export declare const searchResultSchema: () => ZodType;
 /** Shared `workspaceFileScope` lookup parameter for status/search. */

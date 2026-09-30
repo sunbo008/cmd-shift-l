@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  contentFrameSchema,
   searchRequestSchema,
   searchResultSchema,
   statusResultSchema,
@@ -26,5 +27,18 @@ describe('Typert wire schemas (zod mini)', () => {
       truncated: false,
     }
     expect(searchResultSchema().parse(value)).toEqual(value)
+  })
+
+  it('contentFrameSchema accepts progress and result', () => {
+    expect(contentFrameSchema().parse({ type: 'progress', matched: 2, pathHint: 'a.ts' })).toEqual({
+      type: 'progress',
+      matched: 2,
+      pathHint: 'a.ts',
+    })
+    expect(contentFrameSchema().parse({ type: 'result', hits: [], truncated: false })).toEqual({
+      type: 'result',
+      hits: [],
+      truncated: false,
+    })
   })
 })

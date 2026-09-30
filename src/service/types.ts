@@ -31,6 +31,45 @@ export interface ContentHit {
   readonly preview: string
 }
 
+/** File-leg Remote/service result. */
+export interface FileLegResult {
+  readonly hits: readonly FileHit[]
+  readonly truncated: boolean
+  readonly error?: string
+}
+
+/** Symbol-leg Remote/service result. */
+export interface SymbolLegResult {
+  readonly hits: readonly SymbolHit[]
+  readonly truncated: boolean
+  readonly error?: string
+}
+
+/** Content-leg Remote/service result (unary). */
+export interface ContentLegResult {
+  readonly hits: readonly ContentHit[]
+  readonly truncated: boolean
+  readonly error?: string
+}
+
+/**
+ * One frame of a streaming content search.
+ * Progress frames never carry hits; the final result frame does.
+ */
+export type ContentSearchFrame =
+  | {
+    readonly type: 'progress'
+    readonly matched: number
+    readonly pathHint?: string
+    readonly filesScanned?: number
+  }
+  | {
+    readonly type: 'result'
+    readonly hits: readonly ContentHit[]
+    readonly truncated: boolean
+    readonly error?: string
+  }
+
 /** Unified partitioned search response. */
 export interface SearchResult {
   readonly files: readonly FileHit[]
@@ -93,4 +132,44 @@ export interface WorkspaceCodeSearch {
     limitPerKind?: number
     signal: AbortSignal
   }): Promise<SearchResult>
+  /**
+   * File-path leg only.
+   * @param request - query without kinds
+   */
+  searchFiles(request: {
+    root: AbsolutePath
+    query: string
+    limitPerKind?: number
+    signal: AbortSignal
+  }): Promise<FileLegResult>
+  /**
+   * Symbol leg only.
+   * @param request - query without kinds
+   */
+  searchSymbols(request: {
+    root: AbsolutePath
+    query: string
+    limitPerKind?: number
+    signal: AbortSignal
+  }): Promise<SymbolLegResult>
+  /**
+   * Content leg only (unary; streaming lands in a later change).
+   * @param request - query without kinds
+   */
+  searchContent(request: {
+    root: AbsolutePath
+    query: string
+    limitPerKind?: number
+    signal: AbortSignal
+  }): Promise<ContentLegResult>
+  /**
+   * Stream content progress + final result frames.
+   * @param request - query without kinds
+   */
+  searchContentStream(request: {
+    root: AbsolutePath
+    query: string
+    limitPerKind?: number
+    signal: AbortSignal
+  }): AsyncGenerator<ContentSearchFrame, void, void>
 }

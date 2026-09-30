@@ -2,7 +2,7 @@
 
 日期：2026-09-30  
 范围：`@dsh-plugin/cmd-shift-l` 在 Windows + `dsh web`（Chrome）上的表现。  
-钉扎版本：**`0.1.13-pin-e3e6a8f`**（对应源码 `e3e6a8f`）为目前确认「能正常用」的基线。
+**已知可用钉扎提交：`d660b5c`（版本 `0.1.16-pin-e3e6a8f`，源码行为 = `e3e6a8f`）。** 此后改动须单变量叠加并在 Windows 实机确认。
 
 ## 结论摘要
 
@@ -27,6 +27,8 @@
 | `0.1.13-pin-e3e6a8f` | 钉回 `e3e6a8f` | 可用 |
 | `0.1.14-lazy-sqlite` | probe + 去掉 Host 静态 sqlite | 启动不慢；**Files「正在读取…」** |
 | `0.1.15-no-mutobs` | 去掉 MutationObserver，改 setTimeout 轮询 | **整页卡**（同 `971172e` Dock 方向） |
+| `0.1.16-pin-e3e6a8f` | 提交 `d660b5c`，钉回 `e3e6a8f` | **确认可用（当前安全基线）** |
+| `0.1.17-progress-safe` | 在 `d660b5c` 上只加分腿进度 UI | 三次 `search({ kinds: [one] })`；**不**增 Client/Host Remote；**不**改 Dock |
 
 ## 分项说明
 
@@ -71,10 +73,11 @@ Windows 上表现为启动「顿一下」。
 
 ## 当前策略
 
-1. **`main` 钉在 `e3e6a8f` 行为**（`0.1.13` / 本记录所述基线），保证可用。  
-2. 后续改动必须 **单变量** 发布（只动 sqlite 懒加载、或只动 Dock、或只动 Remote），每档 Windows 实机确认。  
-3. **禁止**在未验证前合并：`971172e` 式 Dock pump、多 Remote Client `$mount`。  
-4. Files「正在读取…」与整页卡的 Dock 两难写入上表，待有官方 strip slot 或更稳挂载后再解。
+1. **安全基线提交：`d660b5c`**（`0.1.16-pin-e3e6a8f` = `e3e6a8f` 行为）。  
+2. **`0.1.17-progress-safe`：** 仅叠加分腿进度（三次 unary `search`）；Dock / Remote 面与 `d660b5c` 一致。Windows 实机确认前勿再叠 lazy-sqlite 或 Dock 改动。  
+3. 后续改动必须 **单变量** 发布，每档 Windows 实机确认。  
+4. **禁止**在未验证前合并：`971172e` 式 Dock pump、多 Remote / stream Client `$mount`。  
+5. Files「正在读取…」与整页卡的 Dock 两难写入上表，待有官方 strip slot 或更稳挂载后再解。
 
 ## 安装钉扎命令
 
@@ -83,4 +86,4 @@ dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
 dsh plugin --profile web add "github:sunbo008/cmd-shift-l#main"
 ```
 
-确认 `%USERPROFILE%\.dsh\profiles\web\pnpm-lock.yaml` 中版本为当前 README 所写钉扎版本（回钉后应为 `0.1.16-pin-e3e6a8f` 或文档更新值）。
+确认 `%USERPROFILE%\.dsh\profiles\web\pnpm-lock.yaml` 中版本为当前 README 所写钉扎版本（应为 `0.1.17-progress-safe`）。
