@@ -14,7 +14,7 @@
 
 ## 目标
 
-- 快捷键（Desktop `Cmd/Ctrl+Shift+F`，Web `Cmd/Ctrl+Shift+L`）与按钮（files 侧栏 / files 工具条）打开同一弹窗。
+- 快捷键（Desktop `Cmd/Ctrl+Shift+F`，Web `Cmd/Ctrl+Shift+L`）与右侧栏顶栏（`+` 与分栏之间）放大镜按钮打开同一弹窗。
 - 同一弹窗可搜路径、符号、内容（三类开关，默认全开）。
 - 点击结果 → `sidebarRight.openResource(fileAddressFor(...))`；有行号时带 `{ params: { line } }`。
 - 外部 bundle：用户通过 `dsh plugin add` 安装；不进入安装自带的 `OPTIONAL_BUNDLES`；不进入默认 Web/Desktop profile。
@@ -138,7 +138,7 @@ search(request: {
 ## UI
 
 - 快捷键：Desktop `Cmd/Ctrl+Shift+F`，Web `Cmd/Ctrl+Shift+L`，注册进 Client shortcuts。与按钮共用同一命令。Web 候选排查：`Shift+F` 撞 `session.fork`；`Alt+F` 撞 Chrome Search the web；`Shift+H` 撞 Chrome 主页 / macOS Finder Home；`Shift+L` 为 Chrome 官方未占用且 dsh 空闲（Safari 侧栏、Bitwarden 自动填充仍可能抢键，见 bundle README）。与 VS Code：Desktop 同键打开三态弹窗，Web 用 `Shift+L`。
-- 按钮：右侧 Sidebar files 工具条（或 files guide 入口旁），搜索图标。
+- 按钮：右侧 Sidebar 顶栏 dock strip（`+` 与分栏之间）portal 放大镜；与快捷键共用同一 `openSearch`。
 - 模态弹窗（居中略偏上）：
   1. 搜索框，打开即聚焦；Esc 关闭；↑/↓ 移动选中；Enter 打开。
   2. 开关：文件 / 符号 / 内容（默认全开）→ `kinds`。

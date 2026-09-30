@@ -1,5 +1,5 @@
 /**
- * Client plugin: modal overlay, Cmd/Ctrl+Shift+L (Web) / Shift+F (Desktop), files toolbar button.
+ * Client plugin: modal overlay, Cmd/Ctrl+Shift+L (Web) / Shift+F (Desktop), dock-strip button.
  *
  * Uses structural Cordis faces so this package typechecks without linking the
  * full harness client tree; when installed into dsh the real services match.

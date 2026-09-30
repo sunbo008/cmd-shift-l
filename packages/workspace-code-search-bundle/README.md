@@ -21,7 +21,7 @@
 在已安装 dsh 的环境中，把本 Bundle 加进某个 profile（路径按本机仓库调整）：
 
 ```bash
-dsh plugin --profile <name> add /Users/zhifengleng/workspace/dsh-plugin/packages/workspace-code-search-bundle
+dsh plugin --profile <name> add /Users/zhifengleng/workspace/github/cmd-shift-l/packages/workspace-code-search-bundle
 ```
 
 或使用 workspace / npm 协议发布后的包名：
@@ -43,10 +43,11 @@ dsh --profile <name> desktop
 - 在 Plugins 管理页关闭本 Bundle；或
 - `dsh plugin --profile <name> remove @dsh-plugin/workspace-code-search-bundle`
 
-关闭后快捷键、工具条按钮与 Remote 一并消失。
+关闭后快捷键、顶栏放大镜与 Remote 一并消失。
 
 ## 使用说明
 
+- **UI 入口**：右侧栏顶栏（`+` 与分栏之间）放大镜；**不**再注册 files / document 工具条上的第二个放大镜。
 - 快捷键：Desktop `Cmd/Ctrl+Shift+F`；Web `Cmd/Ctrl+Shift+L`（id：`workspace.codeSearch`）。
 - **快捷键冲突调查（Web）**
   | 组合 | 结论 |
@@ -62,7 +63,7 @@ dsh --profile <name> desktop
 
 ## 已知限制
 
-- **入口**：右侧栏顶栏（`+` 与分栏之间）portal 放大镜；另注册 `sidebar.right.tab.files.actions` / `sidebar.right.tab.document.actions`。顶栏 dock strip 无正式 Cordis slot，portal 依赖 `data-dockkit-strip-*` 标记。
+- **入口**：右侧栏顶栏（`+` 与分栏之间）portal 放大镜；快捷键见上文。顶栏 dock strip 无正式 Cordis slot，portal 依赖 `data-dockkit-strip-*` 标记。
 - **Session / cwd 变更关窗**：若 Host 暴露 `sidebarRight.mounted` 或 `sessions.activeWorkspaceRoot` 可订阅快照，切换时关闭弹窗并 abort；否则依赖再次打开时按新 Session 解析 root。
 - **Host grep**：内容搜索走 Host 侧 `rg`；无 `rg` 时内容区失败，文件/符号不受影响。
 - **SQLite**：codegraph Provider 使用 Node 内置 `node:sqlite` 只读打开索引；无需 `better-sqlite3` 原生编译。
@@ -91,12 +92,12 @@ dsh --profile <name> desktop
 | `@dsh-plugin/workspace-code-search-codegraph` | 文件 + 符号 Provider |
 | `@dsh-plugin/workspace-code-search-content` | 内容 grep Provider |
 | `@dsh-plugin/api-workspace-code-search` | Session 作用域 Typert Remote（线传无 `root`） |
-| `@dsh-plugin/client-ui-workspace-code-search` | 弹窗、快捷键、locale、取消三件套 |
+| `@dsh-plugin/client-ui-workspace-code-search` | 弹窗、顶栏放大镜、快捷键、locale、取消三件套 |
 
 ## 冒烟清单
 
 1. 安装 Bundle 并启动 profile；确认终端无 `failed to import` / `disabling ... api-workspace-code-search`。
-2. 有 Session 时：Desktop `Cmd/Ctrl+Shift+F`，Web `Cmd/Ctrl+Shift+L` 打开弹窗。
+2. 有 Session 时：顶栏仅一个放大镜；Desktop `Cmd/Ctrl+Shift+F`，Web `Cmd/Ctrl+Shift+L` 打开弹窗。路径栏 / document 工具条不应再出现搜索图标。
 3. 无 codegraph：内容可搜；文件/符号区空 + 横幅。
 4. 有索引：文件/符号有命中；点击结果在右侧 Sidebar 打开（含行号时跳行）。
 5. 快速连续输入：无迟到结果闪烁；Abort 不进错误横幅。

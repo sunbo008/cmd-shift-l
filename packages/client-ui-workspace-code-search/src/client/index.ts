@@ -1,5 +1,5 @@
 /**
- * Client plugin: modal overlay, Cmd/Ctrl+Shift+L (Web) / Shift+F (Desktop), files toolbar button.
+ * Client plugin: modal overlay, Cmd/Ctrl+Shift+L (Web) / Shift+F (Desktop), dock-strip button.
  *
  * Uses structural Cordis faces so this package typechecks without linking the
  * full harness client tree; when installed into dsh the real services match.
@@ -10,7 +10,6 @@ import type { WorkspaceCodeSearchRemote } from '@dsh-plugin/api-workspace-code-s
 import type { CodegraphStatus, SearchResult } from '@dsh-plugin/workspace-code-search'
 import type { RemoteSearchRequest, WorkspaceSearchScope } from '@dsh-plugin/api-workspace-code-search/client'
 import { Config } from './config.ts'
-import { FilesToolbarButton } from './FilesToolbarButton.tsx'
 import { SearchModalHost } from './SearchModalHost.tsx'
 import { en, zh } from './locales.ts'
 import { createModalController, type SearchSessionScope } from './modal-controller.ts'
@@ -57,7 +56,7 @@ export async function apply(
 }
 
 /**
- * Register shortcuts, overlay, and optional files toolbar once Remote is mounted.
+ * Register shortcuts, overlay, and dock-strip button once Remote is mounted.
  * @param face - structural Client services
  * @param debounceMs - search debounce from Config
  */
@@ -125,11 +124,6 @@ function registerUi(face: ClientFace, debounceMs: number): void {
     if (session === undefined) return
     modal.open(session)
   }
-  const toolbarInject = () => ({
-    onClick: openSearch,
-    label: () => t('shortcutLabel'),
-  })
-
   // slots.inject already owns a Cordis effect; do not wrap it in ctx.effect.
   slots.inject('shell.overlay', () => slots.register({
     name: 'shell.overlay',
@@ -161,28 +155,6 @@ function registerUi(face: ClientFace, debounceMs: number): void {
       },
     }),
   }, SearchModalHost))
-
-  // Files tree + document preview toolbars (declared by those packages).
-  try {
-    slots.inject('sidebar.right.tab.files.actions', () => slots.register({
-      name: 'sidebar.right.tab.files.actions',
-      id: 'workspace-code-search',
-      locale: NS,
-      inject: toolbarInject,
-    }, FilesToolbarButton))
-  } catch {
-    // Slot undeclared — dock-strip portal + shortcut remain.
-  }
-  try {
-    slots.inject('sidebar.right.tab.document.actions', () => slots.register({
-      name: 'sidebar.right.tab.document.actions',
-      id: 'workspace-code-search',
-      locale: NS,
-      inject: toolbarInject,
-    }, FilesToolbarButton))
-  } catch {
-    // Slot undeclared — dock-strip portal + shortcut remain.
-  }
 
   // Close on right-sidebar Session target changes when the host exposes mounted.
   face.effect(() => {
