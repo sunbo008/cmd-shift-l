@@ -18,9 +18,19 @@
 
 ## 安装
 
+推荐从 GitHub 安装（无需 npm）：
+
 ```bash
-dsh plugin --profile <name> add @dsh-plugin/cmd-shift-l
+dsh plugin --profile <name> add 'github:sunbo008/cmd-shift-l#path:packages/cmd-shift-l'
 ```
+
+指定分支：
+
+```bash
+dsh plugin --profile <name> add 'github:sunbo008/cmd-shift-l#main&path:packages/cmd-shift-l'
+```
+
+更多说明见仓库根 [README](../../README.md)。
 
 启动：
 
@@ -29,8 +39,6 @@ dsh --profile <name> web
 # 或
 dsh --profile <name> desktop
 ```
-
-包需已发布到 npm；未发布时 `add` 会找不到包。
 
 ## 恢复 / 卸载
 
