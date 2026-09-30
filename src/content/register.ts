@@ -17,11 +17,7 @@ export function registerContentProvider(ctx: Context): void {
         return await listFilesByQuery(request)
       } catch (error) {
         if (request.signal.aborted) throw error
-        return {
-          hits: [],
-          truncated: false,
-          error: error instanceof Error ? error.message : String(error),
-        }
+        return { hits: [], truncated: false }
       }
     },
     async searchContent(request) {

@@ -4,14 +4,7 @@ import type { WorkspaceCodeSearchRemote, WorkspaceSearchScope } from '../api/cli
 /** Client search knobs (mirrors Host Config defaults). */
 export interface SearchUiConfig {
   readonly debounceMs: number
-  /**
-   * Client-side failsafe so the UI never stays on「搜索中…」if Host Remote hangs
-   * (e.g. sync SQLite blocking the event loop before a Host timeout can fire).
-   */
-  readonly clientTimeoutMs?: number
 }
-
-const DEFAULT_CLIENT_TIMEOUT_MS = 15_000
 
 /** Collect enabled kinds from toggle flags. */
 export function kindsFromFlags(flags: {
@@ -36,7 +29,6 @@ export function shouldSkipSearch(query: string, kinds: readonly SearchKind[]): b
  */
 export class SearchRequestController {
   private debounceTimer: ReturnType<typeof setTimeout> | undefined
-  private clientTimeoutTimer: ReturnType<typeof setTimeout> | undefined
   private controller: AbortController | undefined
   private issuedSeq = 0
   private renderedSeq = 0
@@ -53,7 +45,6 @@ export class SearchRequestController {
   dispose(): void {
     if (this.debounceTimer !== undefined) clearTimeout(this.debounceTimer)
     this.debounceTimer = undefined
-    this.clearClientTimeout()
     this.controller?.abort()
     this.controller = undefined
   }
@@ -69,7 +60,6 @@ export class SearchRequestController {
     if (shouldSkipSearch(query, kinds)) {
       this.controller?.abort()
       this.controller = undefined
-      this.clearClientTimeout()
       this.onResult(undefined, false)
       this.onError(undefined)
       return
@@ -83,49 +73,29 @@ export class SearchRequestController {
 
   private async run(query: string, kinds: readonly SearchKind[]): Promise<void> {
     this.controller?.abort()
-    this.clearClientTimeout()
     const controller = new AbortController()
     this.controller = controller
     const seq = ++this.issuedSeq
     this.onResult(undefined, true)
     this.onError(undefined)
-    const timeoutMs = this.config.clientTimeoutMs ?? DEFAULT_CLIENT_TIMEOUT_MS
     try {
-      const result = await new Promise<SearchResult>((resolve, reject) => {
-        this.clientTimeoutTimer = setTimeout(() => {
-          this.clientTimeoutTimer = undefined
-          controller.abort()
-          reject(Object.assign(
-            new Error(`Search timed out after ${String(timeoutMs)}ms`),
-            { name: 'TimeoutError' },
-          ))
-        }, timeoutMs)
-        void this.remote.search(this.scope, { query, kinds }, controller.signal).then(
-          (value) => { resolve(value) },
-          (error: unknown) => { reject(error) },
-        )
-      })
-      this.clearClientTimeout()
-      if (!this.accept(seq)) return
+      const result = await this.remote.search(
+        this.scope,
+        { query, kinds },
+        controller.signal,
+      )
+      if (!this.accept(seq, controller.signal)) return
       this.onResult(result, false)
     } catch (error) {
-      this.clearClientTimeout()
-      if (!this.accept(seq)) return
-      if (error instanceof Error && error.name === 'AbortError') {
-        this.onResult(undefined, false)
-        return
-      }
+      if (!this.accept(seq, controller.signal)) return
+      if (error instanceof Error && error.name === 'AbortError') return
       this.onResult(undefined, false)
       this.onError(error instanceof Error ? error.message : String(error))
     }
   }
 
-  private clearClientTimeout(): void {
-    if (this.clientTimeoutTimer !== undefined) clearTimeout(this.clientTimeoutTimer)
-    this.clientTimeoutTimer = undefined
-  }
-
-  private accept(seq: number): boolean {
+  private accept(seq: number, signal: AbortSignal): boolean {
+    if (signal.aborted) return false
     if (seq !== this.issuedSeq) return false
     if (seq <= this.renderedSeq) return false
     this.renderedSeq = seq

@@ -55,7 +55,6 @@ export interface WorkspaceCodeSearchProvider {
     searchFiles?(request: ProviderSearchRequest): Promise<{
         hits: FileHit[];
         truncated: boolean;
-        error?: string;
     }>;
     searchSymbols?(request: ProviderSearchRequest): Promise<{
         hits: SymbolHit[];

@@ -6,15 +6,13 @@ import { asAbsolutePath } from '../src/service/index.ts'
 import { resolveRgBinary, runWorkspaceGrep } from '../src/content/grep.ts'
 import { spawnSync } from 'node:child_process'
 
-async function rgAvailable(): Promise<boolean> {
-  const rg = await resolveRgBinary()
+function rgAvailable(): boolean {
+  const rg = resolveRgBinary()
   const probe = spawnSync(rg, ['--version'], { encoding: 'utf8' })
   return probe.status === 0
 }
 
-const hasRg = await rgAvailable()
-
-describe.skipIf(!hasRg)('content grep', () => {
+describe.skipIf(!rgAvailable())('content grep', () => {
   it('returns path:line:preview for a text hit', async () => {
     const root = await mkdtemp(join(tmpdir(), 'wcs-'))
     await writeFile(join(root, 'a.txt'), 'hello uniqueToken world\n')

@@ -1,16 +1,59 @@
 import type { DatabaseSync } from 'node:sqlite'
+import { relative, resolve, sep } from 'node:path'
 import type {
   AbsolutePath,
   FileHit,
   ProviderSearchRequest,
   SymbolHit,
 } from '../service/types.ts'
-import { isUnderRoot, scorePath, toRelative } from '../content/path-util.ts'
-
-export { isUnderRoot, scorePath } from '../content/path-util.ts'
 
 function escapeLike(value: string): string {
   return value.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')
+}
+
+/**
+ * Return true when relativePath stays under root (no `..` escape).
+ * @param root - workspace root
+ * @param relativePath - candidate path relative to root
+ */
+export function isUnderRoot(root: AbsolutePath, relativePath: string): boolean {
+  if (relativePath.includes('\0')) return false
+  const normalized = relativePath.replaceAll('\\', '/')
+  if (normalized.startsWith('/') || /^[A-Za-z]:\//.test(normalized)) return false
+  const abs = resolve(root, normalized)
+  const rootResolved = resolve(root)
+  return abs === rootResolved || abs.startsWith(rootResolved + sep)
+}
+
+/**
+ * Score a path for ranking: prefix / path-segment matches beat substring.
+ * @param path - relative path
+ * @param query - search query
+ */
+export function scorePath(path: string, query: string): number {
+  const p = path.toLowerCase()
+  const q = query.toLowerCase()
+  if (p === q) return 1000
+  const base = p.split('/').pop() ?? p
+  if (base === q) return 900
+  if (base.startsWith(q)) return 800
+  if (p.startsWith(q)) return 700
+  if (base.includes(q)) return 500
+  if (p.includes(q)) return 300
+  return 0
+}
+
+function toRelative(root: AbsolutePath, stored: string): string | undefined {
+  const normalized = stored.replaceAll('\\', '/')
+  if (!normalized.includes('/') && !normalized.includes('\\')) {
+    return isUnderRoot(root, normalized) ? normalized : undefined
+  }
+  if (normalized.startsWith('/') || /^[A-Za-z]:\//.test(normalized)) {
+    const rel = relative(root, normalized).replaceAll('\\', '/')
+    if (rel.startsWith('..') || rel === '') return undefined
+    return isUnderRoot(root, rel) ? rel : undefined
+  }
+  return isUnderRoot(root, normalized) ? normalized : undefined
 }
 
 /**
@@ -65,7 +108,7 @@ export async function searchSymbols(
   request.signal.throwIfAborted()
   const scored: SymbolHit[] = []
   for (const row of rows) {
-    const path = toRelative(request.root as AbsolutePath, row.file_path)
+    const path = toRelative(request.root, row.file_path)
     if (path === undefined) continue
     const score = scorePath(row.name, request.query)
     scored.push({

@@ -1,9 +1,6 @@
 /**
  * Portals a search control into the right-Sidebar dock strip (between + and split).
  * The strip has no public Cordis slot; this mounts into `data-dockkit-strip-fill`.
- *
- * Never watch `document` with MutationObserver — on Windows a busy Files tree
- * mutates constantly and that starves React, leaving the panel on「正在读取…」.
  */
 import { useEffect, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
@@ -26,20 +23,15 @@ export function DockStripSearchButton(props: DockStripSearchButtonProps): ReactN
 
   useEffect(() => {
     let disposed = false
-    let timer: ReturnType<typeof setTimeout> | undefined
-
-    const locateFill = (): { strip: Element; fill: Element } | undefined => {
+    const sync = (): void => {
+      if (disposed) return
       const chrome = document.querySelector('[data-dockkit-strip-chrome]')
       const strip = chrome?.closest('[data-dockkit-strip]')
       const fill = strip?.querySelector('[data-dockkit-strip-fill]')
-      if (strip == null || fill == null) return undefined
-      return { strip, fill }
-    }
-
-    const ensureHost = (): HTMLElement | null => {
-      const located = locateFill()
-      if (located === undefined) return null
-      const { strip, fill } = located
+      if (strip === null || strip === undefined || fill === null || fill === undefined) {
+        setHost(null)
+        return
+      }
       let next = strip.querySelector<HTMLElement>(`[${HOST_ATTR}]`)
       if (next === null) {
         next = document.createElement('div')
@@ -49,31 +41,14 @@ export function DockStripSearchButton(props: DockStripSearchButtonProps): ReactN
         next.style.alignItems = 'center'
         strip.insertBefore(next, fill)
       }
-      return next
+      setHost(next)
     }
-
-    const publish = (next: HTMLElement | null): void => {
-      setHost((prev) => (prev === next ? prev : next))
-    }
-
-    /** Fast poll until the strip exists, then rare health checks only. */
-    const pump = (delayMs: number): void => {
-      if (disposed) return
-      timer = setTimeout(() => {
-        if (disposed) return
-        const next = ensureHost()
-        publish(next)
-        pump(next === null ? 150 : 5000)
-      }, delayMs)
-    }
-
-    publish(null)
-    // Let the Files panel finish its first Remote round before we touch the strip.
-    pump(500)
-
+    sync()
+    const observer = new MutationObserver(sync)
+    observer.observe(document.body, { childList: true, subtree: true })
     return () => {
       disposed = true
-      if (timer !== undefined) clearTimeout(timer)
+      observer.disconnect()
       document.querySelectorAll(`[${HOST_ATTR}]`).forEach((node) => { node.remove() })
       setHost(null)
     }

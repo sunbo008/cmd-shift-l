@@ -3,8 +3,8 @@
  */
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '../service/index.ts'
-import { probeCodegraphStatus } from './probe.ts'
-import { searchFilesInWorker, searchSymbolsInWorker } from './worker-search.ts'
+import { openCodegraph } from './db.ts'
+import { searchFiles, searchSymbols } from './search.ts'
 
 /**
  * @param ctx - Cordis context with workspaceCodeSearch
@@ -13,26 +13,34 @@ export function registerCodegraphProvider(ctx: Context): void {
   ctx.effect(() => ctx.workspaceCodeSearch.register({
     id: 'codegraph',
     status(root) {
-      const { dbPath: _dbPath, ...status } = probeCodegraphStatus(root)
-      return status
+      const opened = openCodegraph(root)
+      opened.db?.close()
+      return opened.status
     },
     async searchFiles(request) {
-      const probed = probeCodegraphStatus(request.root)
-      if (probed.codegraph !== 'ready' || probed.dbPath === undefined) {
+      const opened = openCodegraph(request.root)
+      if (opened.db === undefined) {
         return { hits: [], truncated: false }
       }
-      return await searchFilesInWorker(probed.dbPath, request)
+      try {
+        return await searchFiles(opened.db, request)
+      } finally {
+        opened.db.close()
+      }
     },
     async searchSymbols(request) {
-      const probed = probeCodegraphStatus(request.root)
-      if (probed.codegraph !== 'ready' || probed.dbPath === undefined) {
+      const opened = openCodegraph(request.root)
+      if (opened.db === undefined) {
         return { hits: [], truncated: false }
       }
-      return await searchSymbolsInWorker(probed.dbPath, request)
+      try {
+        return await searchSymbols(opened.db, request)
+      } finally {
+        opened.db.close()
+      }
     },
   }), 'workspace-code-search-codegraph: register')
 }
 
 export { openCodegraph } from './db.ts'
-export { probeCodegraphStatus, codegraphDbPath } from './probe.ts'
 export { isUnderRoot, scorePath, searchFiles, searchSymbols } from './search.ts'

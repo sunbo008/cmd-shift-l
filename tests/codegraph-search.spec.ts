@@ -4,7 +4,6 @@ import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { asAbsolutePath } from '../src/service/index.ts'
 import { openCodegraph } from '../src/codegraph/db.ts'
-import { probeCodegraphStatus } from '../src/codegraph/probe.ts'
 import { searchFiles, searchSymbols } from '../src/codegraph/search.ts'
 
 const testsDir = resolve(fileURLToPath(new URL('.', import.meta.url)))
@@ -18,14 +17,11 @@ describe('codegraph provider', () => {
   it('reports missing when .codegraph absent', () => {
     const root = asAbsolutePath(resolve(fixtures, 'missing'))
     expect(openCodegraph(root).status.codegraph).toBe('missing')
-    expect(probeCodegraphStatus(root).codegraph).toBe('missing')
   })
 
   it('reports error for corrupt database', () => {
     const root = asAbsolutePath(resolve(fixtures, 'corrupt'))
     expect(openCodegraph(root).status.codegraph).toBe('error')
-    // Probe stays ready (no SQLite open); worker validates on search.
-    expect(probeCodegraphStatus(root).codegraph).toBe('ready')
   })
 
   it('finds file path by substring with basename preferred', async () => {

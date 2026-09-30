@@ -61,9 +61,7 @@ export interface ProviderSearchRequest {
 export interface WorkspaceCodeSearchProvider {
   readonly id: string
   status?(root: AbsolutePath): CodegraphStatus | Promise<CodegraphStatus>
-  searchFiles?(
-    request: ProviderSearchRequest,
-  ): Promise<{ hits: FileHit[]; truncated: boolean; error?: string }>
+  searchFiles?(request: ProviderSearchRequest): Promise<{ hits: FileHit[]; truncated: boolean }>
   searchSymbols?(request: ProviderSearchRequest): Promise<{ hits: SymbolHit[]; truncated: boolean }>
   searchContent?(
     request: ProviderSearchRequest,
