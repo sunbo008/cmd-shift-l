@@ -1,1 +1,1 @@
-{"version":3,"file":"remote.d.ts","sourceRoot":"","sources":["../../../src/api/remote.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AACH,OAAO,KAAK,EAAE,wBAAwB,EAAE,MAAM,kCAAkC,CAAA;AAQhF,oDAAoD;AACpD,eAAO,MAAM,aAAa,EAAE,wBA2C3B,CAAA;AAED,eAAe,aAAa,CAAA"}
+{"version":3,"file":"remote.d.ts","sourceRoot":"","sources":["../../../src/api/remote.ts"],"names":[],"mappings":"AAAA;;;GAGG;AACH,OAAO,KAAK,EAAE,wBAAwB,EAAE,MAAM,kCAAkC,CAAA;AAQhF,oDAAoD;AACpD,eAAO,MAAM,aAAa,EAAE,wBA2C3B,CAAA;AAED,eAAe,aAAa,CAAA"}

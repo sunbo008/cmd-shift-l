@@ -1,9 +1,6 @@
 /**
  * Hand-written Client Remote contribution for `$mount`.
- * Descriptors must match {@link ./typert.host.ts} invocations for mounted methods.
- *
- * Only `status` + `search` are mounted on the Client. Extra Host leg methods stay
- * Host-only: expanding Client `$mount` previously hung Windows UI inject.
+ * Descriptors must match {@link ./typert.host.ts} invocations.
  */
 import type { TypertRemoteContribution } from '@deepseek-ai/dsh-typert-protocol'
 import {

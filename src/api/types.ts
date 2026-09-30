@@ -27,9 +27,3 @@ export interface RemoteSearchRequest {
   readonly kinds: readonly ('file' | 'content' | 'symbol')[]
   readonly limitPerKind?: number
 }
-
-/** Single-leg Remote body — no root, no kinds. */
-export interface RemoteLegRequest {
-  readonly query: string
-  readonly limitPerKind?: number
-}

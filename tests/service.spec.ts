@@ -1,11 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { asAbsolutePath, Config } from '../src/service/index.ts'
-import {
-  clampLimitPerKind,
-  normalizeQuery,
-  orchestrateSearch,
-  runSymbolLeg,
-} from '../src/service/orchestrate.ts'
+import { clampLimitPerKind, normalizeQuery, orchestrateSearch } from '../src/service/orchestrate.ts'
 import type { WorkspaceCodeSearchProvider } from '../src/service/types.ts'
 
 const root = asAbsolutePath('/tmp/ws')
@@ -129,38 +124,5 @@ describe('orchestrateSearch', () => {
       signal: AbortSignal.timeout(1000),
     })
     expect(result.files.map(h => h.path)).toEqual(['docs/a.md', 'src/a.ts'])
-  })
-})
-
-describe('runSymbolLeg', () => {
-  it('returns hits without waiting for content providers', async () => {
-    let contentStarted = false
-    const providers: WorkspaceCodeSearchProvider[] = [
-      {
-        id: 'codegraph',
-        status: () => ({ codegraph: 'ready' }),
-        searchFiles: async () => ({ hits: [], truncated: false }),
-        searchSymbols: async () => ({
-          hits: [{ path: 'a.ts', name: 'Foo', kind: 'class' }],
-          truncated: false,
-        }),
-      },
-      {
-        id: 'content',
-        searchContent: async () => {
-          contentStarted = true
-          await new Promise(() => {})
-          return { hits: [], truncated: false }
-        },
-      },
-    ]
-    const symbols = await runSymbolLeg(providers, Config({}), {
-      root,
-      query: 'Foo',
-      limit: 50,
-      signal: AbortSignal.timeout(1000),
-    })
-    expect(symbols.hits).toEqual([{ path: 'a.ts', name: 'Foo', kind: 'class' }])
-    expect(contentStarted).toBe(false)
   })
 })

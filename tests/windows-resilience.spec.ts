@@ -62,7 +62,7 @@ describe('SearchRequestController client timeout', () => {
       remote,
       { sessionId: 's1', workspaceRoot: '/ws' },
       { debounceMs: 0, clientTimeoutMs: 100 },
-      (state) => { states.push(state.searching) },
+      (_result, searching) => { states.push(searching) },
       (message) => { errors.push(message) },
     )
     controller.schedule('needle', ['content'])
