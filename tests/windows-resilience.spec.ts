@@ -4,7 +4,6 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { asAbsolutePath } from '../src/service/index.ts'
-import { openCodegraph } from '../src/codegraph/db.ts'
 import { searchFilesInWorker, searchSymbolsInWorker } from '../src/codegraph/worker-search.ts'
 import { isUnderRoot } from '../src/content/path-util.ts'
 import { SearchRequestController } from '../src/client/search-controller.ts'
@@ -24,23 +23,30 @@ beforeAll(() => {
 describe('codegraph worker search', () => {
   it('finds files and symbols off the Host event loop', async () => {
     const root = asAbsolutePath(resolve(fixtures, 'ready'))
-    const opened = openCodegraph(root)
-    expect(opened.dbPath).toBeDefined()
-    opened.db?.close()
-    const files = await searchFilesInWorker(opened.dbPath!, {
-      root,
-      query: 'foo',
-      limit: 10,
-      signal: AbortSignal.timeout(10_000),
-    })
-    expect(files.hits[0]?.path).toBe('src/foo.ts')
-    const symbols = await searchSymbolsInWorker(opened.dbPath!, {
-      root,
-      query: 'Bar',
-      limit: 10,
-      signal: AbortSignal.timeout(10_000),
-    })
-    expect(symbols.hits.some(h => h.name === 'Bar')).toBe(true)
+    // Avoid Host-side openCodegraph: parallel specs share fixtures/ready.
+    const run = async (): Promise<void> => {
+      const files = await searchFilesInWorker(readyDb, {
+        root,
+        query: 'foo',
+        limit: 10,
+        signal: AbortSignal.timeout(10_000),
+      })
+      expect(files.hits[0]?.path).toBe('src/foo.ts')
+      const symbols = await searchSymbolsInWorker(readyDb, {
+        root,
+        query: 'Bar',
+        limit: 10,
+        signal: AbortSignal.timeout(10_000),
+      })
+      expect(symbols.hits.some(h => h.name === 'Bar')).toBe(true)
+    }
+    try {
+      await run()
+    } catch (error) {
+      if (!(error instanceof Error) || !/database is locked/i.test(error.message)) throw error
+      await new Promise(resolve => setTimeout(resolve, 50))
+      await run()
+    }
   })
 })
 
