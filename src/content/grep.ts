@@ -1,24 +1,11 @@
 import { spawn } from 'node:child_process'
-import { relative, resolve, sep } from 'node:path'
 import type { ContentHit, ProviderSearchRequest } from '../service/types.ts'
+import { isUnderRoot, toRelative } from './path-util.ts'
+import { resolveRgBinary } from './rg-path.ts'
 
 const PREVIEW_MAX_CHARS = 200
 
-/** Resolve the ripgrep binary: RG_PATH, then PATH `rg`. */
-export function resolveRgBinary(): string {
-  if (process.env.RG_PATH && process.env.RG_PATH.length > 0) return process.env.RG_PATH
-  return 'rg'
-}
-
-function isUnderRoot(root: string, relativePath: string): boolean {
-  if (relativePath.includes('\0')) return false
-  const normalized = relativePath.replaceAll('\\', '/')
-  if (normalized.startsWith('/') || /^[A-Za-z]:\//.test(normalized)) return false
-  if (normalized.split('/').includes('..')) return false
-  const abs = resolve(root, normalized)
-  const rootResolved = resolve(root)
-  return abs === rootResolved || abs.startsWith(rootResolved + sep)
-}
+export { resolveRgBinary } from './rg-path.ts'
 
 function truncatePreview(text: string): string {
   if (text.includes('\0')) return ''
@@ -45,7 +32,7 @@ export async function runWorkspaceGrep(
   request: ProviderSearchRequest,
 ): Promise<{ hits: ContentHit[]; truncated: boolean; error?: string }> {
   request.signal.throwIfAborted()
-  const rg = resolveRgBinary()
+  const rg = await resolveRgBinary()
   const argv = [
     '--json',
     '--no-config',
@@ -65,7 +52,6 @@ export async function runWorkspaceGrep(
     let stdout = ''
     let stderr = ''
     const onAbort = (): void => {
-      // Windows: SIGTERM is emulated; kill() without a signal still ends the process.
       child.kill()
     }
     request.signal.addEventListener('abort', onAbort, { once: true })
@@ -95,7 +81,7 @@ export async function runWorkspaceGrep(
     child.on('close', (code) => {
       request.signal.removeEventListener('abort', onAbort)
       if (request.signal.aborted) {
-        reject(new Error('aborted'))
+        reject(Object.assign(new Error('aborted'), { name: 'AbortError' }))
         return
       }
       // rg: 0 = matches, 1 = no matches, 2 = error
@@ -122,13 +108,8 @@ export async function runWorkspaceGrep(
         const lineNumber = parsed.data.line_number
         const previewRaw = parsed.data.lines?.text ?? ''
         if (pathText === undefined || lineNumber === undefined) continue
-        const rel = pathText.replaceAll('\\', '/').replace(/^\.\//, '')
-        if (!isUnderRoot(request.root, rel)) continue
-        // Drop absolute paths that rg might emit; normalize via relative().
-        const normalized = (rel.startsWith('/') || /^[A-Za-z]:\//.test(rel)
-          ? relative(request.root, rel).replaceAll('\\', '/')
-          : rel).replace(/^\.\//, '')
-        if (!isUnderRoot(request.root, normalized)) continue
+        const normalized = toRelative(request.root, pathText)
+        if (normalized === undefined || !isUnderRoot(request.root, normalized)) continue
         const preview = truncatePreview(previewRaw)
         if (preview.length === 0) continue
         hits.push({ path: normalized, line: lineNumber, preview })

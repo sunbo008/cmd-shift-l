@@ -29,11 +29,15 @@ function escapeLike(value: string): string {
 
 function isUnderRoot(root: string, relativePath: string): boolean {
   if (relativePath.includes('\0')) return false
-  const normalized = relativePath.replaceAll('\\', '/')
+  const normalized = relativePath.replaceAll('\\', '/').replace(/^\.\//, '')
   if (normalized.startsWith('/') || /^[A-Za-z]:\//.test(normalized)) return false
-  if (normalized.split('/').includes('..')) return false
   const abs = resolve(root, normalized)
   const rootResolved = resolve(root)
+  if (process.platform === 'win32') {
+    const a = abs.toLowerCase()
+    const r = rootResolved.toLowerCase()
+    return a === r || a.startsWith(r.endsWith('\\') ? r : `${r}\\`)
+  }
   return abs === rootResolved || abs.startsWith(rootResolved + sep)
 }
 
