@@ -1,15 +1,15 @@
 ---
-description: dsh-plugin 产物目录与中文文档约定
+description: cmd-shift-l 产物目录与中文文档约定
 alwaysApply: true
 ---
 
 # 仓库产出约定
 
-- **产物只写本仓库**：源码、文档、配置、构建产物一律放在 `/Users/zhifengleng/workspace/dsh-plugin`。不要向 `/Users/zhifengleng/workspace/deepseek-harness` 添加、修改或提交文件；该仓库仅作 dsh API 与组合方式的只读参考。
+- **产物只写本仓库**：源码、文档、配置、构建产物一律放在 `/Users/zhifengleng/workspace/github/cmd-shift-l`。不要向 `/Users/zhifengleng/workspace/deepseek-harness` 添加、修改或提交文件；该仓库仅作 dsh API 与组合方式的只读参考。
 - **文档一律中文**：本仓库产出的设计说明、README、计划、注释型说明文档使用中文。API 名、命令、代码标识符、类型签名保持英文原文。
 - **例外**：用户明确要求英文，或第三方协议/许可证原文必须保留时，可保留英文。
 
 ```text
-✅ docs/specs/*.md（中文）写在 dsh-plugin
+✅ docs/specs/*.md（中文）写在 cmd-shift-l
 ❌ 把插件包或设计文档写进 deepseek-harness
 ```
