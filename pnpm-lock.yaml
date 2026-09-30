@@ -82,19 +82,7 @@ importers:
         specifier: ^5.9.0
         version: 5.9.3
 
-  packages/workspace-code-search:
-    devDependencies:
-      '@deepseek-ai/cordis':
-        specifier: ~4.0.4
-        version: 4.0.4
-      '@deepseek-ai/schemastery':
-        specifier: ~3.18.4
-        version: 3.18.4
-      typescript:
-        specifier: ^5.9.0
-        version: 5.9.3
-
-  packages/workspace-code-search-bundle:
+  packages/cmd-shift-l:
     dependencies:
       '@dsh-plugin/api-workspace-code-search':
         specifier: workspace:*
@@ -121,6 +109,18 @@ importers:
       js-yaml:
         specifier: ^4.1.0
         version: 4.3.2
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
+  packages/workspace-code-search:
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: ~4.0.4
+        version: 4.0.4
+      '@deepseek-ai/schemastery':
+        specifier: ~3.18.4
+        version: 3.18.4
       typescript:
         specifier: ^5.9.0
         version: 5.9.3

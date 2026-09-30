@@ -4,7 +4,7 @@ import { load } from 'js-yaml'
 
 type PatchDoc = Array<{ insert?: Array<{ id: string; name: string }> }>
 
-describe('workspace-code-search-bundle patch', () => {
+describe('@dsh-plugin/cmd-shift-l patch', () => {
   it('inserts host and client plugin rows', () => {
     const raw = readFileSync(new URL('../cordis.patch.yml', import.meta.url), 'utf8')
     const doc = load(raw) as PatchDoc

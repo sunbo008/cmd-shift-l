@@ -1,4 +1,4 @@
-# @dsh-plugin/workspace-code-search-bundle
+# @dsh-plugin/cmd-shift-l
 
 外部可安装的 dsh Bundle：在 Web / Desktop 提供统一工作区搜索弹窗（文件 / 符号 / 内容）。
 
@@ -18,19 +18,9 @@
 
 ## 安装
 
-在已安装 dsh 的环境中，从 GitHub 装进目标 profile（示例用 `<name>`，常见为 `web`）：
-
 ```bash
-dsh plugin --profile <name> add github:sunbo008/cmd-shift-l#path:packages/workspace-code-search-bundle
+dsh plugin --profile <name> add @dsh-plugin/cmd-shift-l
 ```
-
-或：
-
-```bash
-dsh plugin --profile <name> add 'https://github.com/sunbo008/cmd-shift-l.git#path:packages/workspace-code-search-bundle'
-```
-
-git 安装拉的是源码；若 pnpm 要求 `allowBuilds`，按 dsh 提示写入 profile 后再重跑 `add`。仅允许信任的包，需要时钉 commit。
 
 启动：
 
@@ -40,10 +30,12 @@ dsh --profile <name> web
 dsh --profile <name> desktop
 ```
 
+包需已发布到 npm；未发布时 `add` 会找不到包。
+
 ## 恢复 / 卸载
 
 - 在 Plugins 管理页关闭本 Bundle；或
-- `dsh plugin --profile <name> remove @dsh-plugin/workspace-code-search-bundle`
+- `dsh plugin --profile <name> remove @dsh-plugin/cmd-shift-l`
 
 关闭后快捷键、顶栏放大镜与 Remote 一并消失。
 

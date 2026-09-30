@@ -3,7 +3,7 @@
 一句话：以外部可安装 bundle 在 Web/Desktop 提供「文件 / 符号 / 内容」统一搜索弹窗；文件与符号走 codegraph，内容走 Host grep；缺索引只降级提示，不挡内容搜索。
 
 日期：2026-09-29
-状态：已实现（见 [bundle README](../../packages/workspace-code-search-bundle/README.md)）；实现计划见 [docs/plans/2026-09-30-workspace-code-search.md](../plans/2026-09-30-workspace-code-search.md)
+状态：已实现（见 [bundle README](../../packages/cmd-shift-l/README.md)）；实现计划见 [docs/plans/2026-09-30-workspace-code-search.md](../plans/2026-09-30-workspace-code-search.md)
 范围：可外部安装的 dsh bundle（不随 dsh 安装包下发）
 
 约定：本仓库（`dsh-plugin`）产出的文档一律使用中文。标识符、API 名、命令与代码片段保持英文原文。
@@ -44,7 +44,7 @@ dsh 公共 API 为 pre-stable。外部插件无法保证每次 dsh 升级后仍�
 | `workspace-code-search-content` | Provider：经 Host grep / fs-search 搜内容（v1 独立包；不与 codegraph Provider 合并） |
 | `api-workspace-code-search` | 供浏览器调用的 Typert Remote |
 | `client-ui-workspace-code-search` | 弹窗、快捷键、按钮、结果列表、打开 Sidebar |
-| `workspace-code-search-bundle` | `package.json` 的 `dsh.bundle` + `cordis.patch.yml` + locale/icon |
+| `@dsh-plugin/cmd-shift-l`（目录 `packages/cmd-shift-l`） | `package.json` 的 `dsh.bundle` + `cordis.patch.yml` + locale/icon |
 
 以树外 npm（或 git）包发布。用 `dsh plugin --profile <name> add <spec>` 装入 profile。本插件的全部源码、文档与产物一律放在 `/Users/zhifengleng/workspace/dsh-plugin`。不要向 `deepseek-harness` 仓库添加包、patch 或文档（该仓库仅作 API / 组合参考阅读）。
 

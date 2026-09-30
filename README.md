@@ -15,23 +15,13 @@
 
 ## Bundle
 
-排障与兼容矩阵见 [`@dsh-plugin/workspace-code-search-bundle`](packages/workspace-code-search-bundle/README.md)。
+排障与兼容矩阵见 [`@dsh-plugin/cmd-shift-l`](packages/cmd-shift-l/README.md)。
 
 ### 安装
 
-在已安装 dsh 的环境中，把 Bundle 加进目标 profile（示例用 `web`）：
-
 ```bash
-dsh plugin --profile web add github:sunbo008/cmd-shift-l#path:packages/workspace-code-search-bundle
+dsh plugin --profile web add @dsh-plugin/cmd-shift-l
 ```
-
-等价写法：
-
-```bash
-dsh plugin --profile web add 'https://github.com/sunbo008/cmd-shift-l.git#path:packages/workspace-code-search-bundle'
-```
-
-首次从 git 安装时，若 pnpm 拒绝运行构建脚本，按 dsh 提示把包名写入该 profile 的 `pnpm-workspace.yaml`（`allowBuilds`），再重跑上面的 `add`。仅允许你信任的源；需要时可钉 commit：`github:sunbo008/cmd-shift-l#<sha>&path:packages/workspace-code-search-bundle`（具体分隔符以本机 pnpm / dsh 提示为准）。
 
 启动：
 
@@ -44,8 +34,10 @@ dsh --profile web desktop
 卸载：
 
 ```bash
-dsh plugin --profile web remove @dsh-plugin/workspace-code-search-bundle
+dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
 ```
+
+> 包需已发布到 npm；未发布时 `add` 会 404。
 
 ### UI 入口（仅此两处）
 
