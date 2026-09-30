@@ -1,5 +1,15 @@
 packages:
   - 'packages/*'
 
+# Local installs: prefer workspace packages over the github:#path: ranges in the
+# root package.json (those ranges exist so `dsh plugin add github:sunbo008/cmd-shift-l`
+# can resolve monorepo subpackages from outside this repository).
+overrides:
+  '@dsh-plugin/workspace-code-search': workspace:*
+  '@dsh-plugin/workspace-code-search-codegraph': workspace:*
+  '@dsh-plugin/workspace-code-search-content': workspace:*
+  '@dsh-plugin/api-workspace-code-search': workspace:*
+  '@dsh-plugin/client-ui-workspace-code-search': workspace:*
+
 onlyBuiltDependencies:
   - esbuild

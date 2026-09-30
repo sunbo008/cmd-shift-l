@@ -4,24 +4,31 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@dsh-plugin/workspace-code-search': workspace:*
+  '@dsh-plugin/workspace-code-search-codegraph': workspace:*
+  '@dsh-plugin/workspace-code-search-content': workspace:*
+  '@dsh-plugin/api-workspace-code-search': workspace:*
+  '@dsh-plugin/client-ui-workspace-code-search': workspace:*
+
 importers:
 
   .:
     dependencies:
       '@dsh-plugin/api-workspace-code-search':
-        specifier: file:packages/api-workspace-code-search
+        specifier: workspace:*
         version: link:packages/api-workspace-code-search
       '@dsh-plugin/client-ui-workspace-code-search':
-        specifier: file:packages/client-ui-workspace-code-search
+        specifier: workspace:*
         version: link:packages/client-ui-workspace-code-search
       '@dsh-plugin/workspace-code-search':
-        specifier: file:packages/workspace-code-search
+        specifier: workspace:*
         version: link:packages/workspace-code-search
       '@dsh-plugin/workspace-code-search-codegraph':
-        specifier: file:packages/workspace-code-search-codegraph
+        specifier: workspace:*
         version: link:packages/workspace-code-search-codegraph
       '@dsh-plugin/workspace-code-search-content':
-        specifier: file:packages/workspace-code-search-content
+        specifier: workspace:*
         version: link:packages/workspace-code-search-content
     devDependencies:
       '@deepseek-ai/cordis':
@@ -59,7 +66,7 @@ importers:
         specifier: ~3.18.4
         version: 3.18.4
       '@dsh-plugin/workspace-code-search':
-        specifier: file:../workspace-code-search
+        specifier: workspace:*
         version: link:../workspace-code-search
       typescript:
         specifier: ^5.9.0
@@ -74,10 +81,10 @@ importers:
         specifier: ~3.18.4
         version: 3.18.4
       '@dsh-plugin/api-workspace-code-search':
-        specifier: file:../api-workspace-code-search
+        specifier: workspace:*
         version: link:../api-workspace-code-search
       '@dsh-plugin/workspace-code-search':
-        specifier: file:../workspace-code-search
+        specifier: workspace:*
         version: link:../workspace-code-search
       '@testing-library/react':
         specifier: ^16.1.0
@@ -125,7 +132,7 @@ importers:
         specifier: ~4.0.4
         version: 4.0.4
       '@dsh-plugin/workspace-code-search':
-        specifier: file:../workspace-code-search
+        specifier: workspace:*
         version: link:../workspace-code-search
       typescript:
         specifier: ^5.9.0
@@ -137,7 +144,7 @@ importers:
         specifier: ~4.0.4
         version: 4.0.4
       '@dsh-plugin/workspace-code-search':
-        specifier: file:../workspace-code-search
+        specifier: workspace:*
         version: link:../workspace-code-search
       typescript:
         specifier: ^5.9.0

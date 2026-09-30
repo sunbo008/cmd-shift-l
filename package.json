@@ -46,11 +46,11 @@
     "publish:packages": "pnpm build && pnpm -r publish --access public --no-git-checks && pnpm publish --access public --no-git-checks"
   },
   "dependencies": {
-    "@dsh-plugin/api-workspace-code-search": "file:packages/api-workspace-code-search",
-    "@dsh-plugin/client-ui-workspace-code-search": "file:packages/client-ui-workspace-code-search",
-    "@dsh-plugin/workspace-code-search": "file:packages/workspace-code-search",
-    "@dsh-plugin/workspace-code-search-codegraph": "file:packages/workspace-code-search-codegraph",
-    "@dsh-plugin/workspace-code-search-content": "file:packages/workspace-code-search-content"
+    "@dsh-plugin/api-workspace-code-search": "github:sunbo008/cmd-shift-l#path:packages/api-workspace-code-search",
+    "@dsh-plugin/client-ui-workspace-code-search": "github:sunbo008/cmd-shift-l#path:packages/client-ui-workspace-code-search",
+    "@dsh-plugin/workspace-code-search": "github:sunbo008/cmd-shift-l#path:packages/workspace-code-search",
+    "@dsh-plugin/workspace-code-search-codegraph": "github:sunbo008/cmd-shift-l#path:packages/workspace-code-search-codegraph",
+    "@dsh-plugin/workspace-code-search-content": "github:sunbo008/cmd-shift-l#path:packages/workspace-code-search-content"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.4"

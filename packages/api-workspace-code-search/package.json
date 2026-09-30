@@ -46,13 +46,13 @@
     "@deepseek-ai/cordis": "~4.0.4",
     "@deepseek-ai/dsh-typert-protocol": "~0.2.0-rc.2",
     "@deepseek-ai/schemastery": "~3.18.4",
-    "@dsh-plugin/workspace-code-search": "0.1.0"
+    "@dsh-plugin/workspace-code-search": "workspace:*"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",
     "@deepseek-ai/dsh-typert-protocol": "~0.2.0-rc.2",
     "@deepseek-ai/schemastery": "~3.18.4",
-    "@dsh-plugin/workspace-code-search": "file:../workspace-code-search",
+    "@dsh-plugin/workspace-code-search": "workspace:*",
     "typescript": "^5.9.0"
   },
   "publishConfig": {

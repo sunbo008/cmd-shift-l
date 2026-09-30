@@ -45,16 +45,16 @@
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",
     "@deepseek-ai/schemastery": "~3.18.4",
-    "@dsh-plugin/api-workspace-code-search": "0.1.0",
-    "@dsh-plugin/workspace-code-search": "0.1.0",
+    "@dsh-plugin/api-workspace-code-search": "workspace:*",
+    "@dsh-plugin/workspace-code-search": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",
     "@deepseek-ai/schemastery": "~3.18.4",
-    "@dsh-plugin/api-workspace-code-search": "file:../api-workspace-code-search",
-    "@dsh-plugin/workspace-code-search": "file:../workspace-code-search",
+    "@dsh-plugin/api-workspace-code-search": "workspace:*",
+    "@dsh-plugin/workspace-code-search": "workspace:*",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.0",
     "@types/react": "^18.3.1",

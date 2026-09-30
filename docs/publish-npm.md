@@ -8,7 +8,7 @@ dsh plugin --profile web add @dsh-plugin/cmd-shift-l
 
 只推 GitHub **不够**：`dsh plugin add @scope/name` 走的是 registry；用户不会从本仓库源码树自动拿到已构建的 `lib/`。
 
-日常用户更推荐直接 [从 GitHub 安装](../README.md#安装推荐github)（根目录 Bundle，无需 npm）。根包对子包使用 `file:packages/…`，以便 git 安装时能带上 monorepo 内依赖（`workspace:*` 在 profile 侧无法解析）。
+日常用户更推荐直接 [从 GitHub 安装](../README.md#安装推荐github)（根目录 Bundle，无需 npm）。根包对子包使用 `github:sunbo008/cmd-shift-l#path:packages/…`，以便 profile 侧 git 安装能解析 monorepo 子包；本仓库内由 `pnpm-workspace.yaml` 的 `overrides` 改回 `workspace:*`。
 
 ## 要发布的包
 
