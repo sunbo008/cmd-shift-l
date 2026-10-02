@@ -1,6 +1,6 @@
 {
   "name": "@dsh-plugin/cmd-shift-l",
-  "version": "0.2.0",
+  "version": "0.2.1-lazy-sqlite",
   "description": "External dsh bundle: workspace code search (Cmd/Ctrl+Shift+L / Shift+F)",
   "icon": "./icon.svg",
   "type": "module",

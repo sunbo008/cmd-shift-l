@@ -2,7 +2,8 @@
 
 日期：2026-09-30  
 范围：`@dsh-plugin/cmd-shift-l` 在 Windows + `dsh web`（Chrome）上的表现。  
-**已知可用钉扎：`0.2.0`（Windows 实机确认；行为 = `d660b5c` + 分腿 unary 进度）。** 此后改动须单变量叠加并在 Windows 实机确认。
+**已知可用钉扎：`0.2.0`（Windows 实机确认；行为 = `d660b5c` + 分腿 unary 进度）。**  
+当前试验：`0.2.1-lazy-sqlite`（单变量：probe，不改 Dock）。此后改动须单变量叠加并在 Windows 实机确认。
 
 ## 结论摘要
 
@@ -29,7 +30,8 @@
 | `0.1.15-no-mutobs`　　 | 去掉 MutationObserver，改 setTimeout 轮询　　　　　 | **整页卡**（同 `971172e` Dock 方向）　　　　　　　　　　　　　　　　　　　　|
 | `0.1.16-pin-e3e6a8f`　 | 提交 `d660b5c`，钉回 `e3e6a8f`　　　　　　　　　　　| **确认可用（安全基线）**　　　　　　　　　　　　　　　　　　　　　　　　　　|
 | `0.1.17-progress-safe` | 在 `d660b5c` 上只加分腿进度 UI　　　　　　　　　　　| 三次 `search({ kinds: [one] })`；**不**增 Client/Host Remote；**不**改 Dock |
-| `0.2.0`　　　　　　　　| tag = `0.1.17-progress-safe` 行为；Windows 实机可用 | **当前发布**　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　|
+| `0.2.0`　　　　　　　　| tag = `0.1.17-progress-safe` 行为；Windows 实机可用 | **已确认可用（回退钉扎）**　　　　　　　　　　　　　　　　　　　　　　　　　|
+| `0.2.1-lazy-sqlite`　　| 在 `0.2.0` 上只叠 probe（Host 不静态加载 sqlite）　 | **待 Windows 验证**（关注启动顿挫 vs Files「正在读取…」）　　　　　　　　　 |
 
 ## 分项说明
 
@@ -74,8 +76,8 @@ Windows 上表现为启动「顿一下」。
 
 ## 当前策略
 
-1. **安全基线提交：`d660b5c`**（`0.1.16-pin-e3e6a8f` = `e3e6a8f` 行为）。  
-2. **`0.2.0`（Windows 已确认）：** 分腿进度（三次 unary `search`）；Dock / Remote 面与 `d660b5c` 一致。  
+1. **安全发布：`0.2.0`**（Windows 已确认；分腿 unary 进度；Dock / Remote = `d660b5c`）。  
+2. **当前试验：`0.2.1-lazy-sqlite`：** 单变量 probe；**不**改 Dock。若 Files「正在读取…」再现，回钉 `0.2.0`。  
 3. 后续改动必须 **单变量** 发布，每档 Windows 实机确认。  
 4. **禁止**在未验证前合并：`971172e` 式 Dock pump、多 Remote / stream Client `$mount`。  
 5. Files「正在读取…」与整页卡的 Dock 两难写入上表，待有官方 strip slot 或更稳挂载后再解。
@@ -87,4 +89,4 @@ dsh plugin --profile web remove @dsh-plugin/cmd-shift-l
 dsh plugin --profile web add "github:sunbo008/cmd-shift-l#main"
 ```
 
-确认 `%USERPROFILE%\.dsh\profiles\web\pnpm-lock.yaml` 中版本为当前 README 所写钉扎版本（应为 `0.2.0`）。
+确认 `%USERPROFILE%\.dsh\profiles\web\pnpm-lock.yaml` 中版本为当前 README 所写钉扎版本（试验中应为 `0.2.1-lazy-sqlite`；回退用 `0.2.0`）。
